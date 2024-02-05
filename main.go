@@ -1,26 +1,32 @@
 package main
 
 import (
+	_ "embed"
+	"errors"
 	"fmt"
 
 	"github.com/perlin-network/life/exec"
 )
 
+//go:embed demo.wat
+var binaryModule []byte
+
 func run() error {
 	device := NewDevice()
+	_ = device
 	// Leds(&device)
-	vm, err := exec.NewVirtualMachine(input, exec.VMConfig{}, &exec.NopResolver{}, nil)
+	vm, err := exec.NewVirtualMachine(binaryModule, exec.VMConfig{}, &exec.NopResolver{}, nil)
 	if err != nil { // if the wasm bytecode is invalid
 		return err
 	}
-	entryID, ok := vm.GetFunctionExport("app_main") // can be changed to your own exported function
+	entryID, ok := vm.GetFunctionExport("update")
 	if !ok {
-		panic("entry function not found")
+		return errors.New("cannot find function `update`")
 	}
 	ret, err := vm.Run(entryID)
 	if err != nil {
 		vm.PrintStackTrace()
-		panic(err)
+		return err
 	}
 	fmt.Printf("return value = %d\n", ret)
 	return nil

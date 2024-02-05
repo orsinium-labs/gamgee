@@ -2,7 +2,11 @@
 version: "3"
 
 tasks:
+  build-wasm:
+    cmds:
+      - wat2wasm demo.wat
   flash:
     desc: "Flash the demo to pybadge"
     cmds:
+      - task: build-wasm
       - tinygo flash -size short -target pybadge .
