@@ -3,7 +3,7 @@ module github.com/orsinium-labs/pybadge-wasm
 go 1.21.3
 
 require (
-	github.com/tetratelabs/wazero v1.6.0
+	github.com/c0mm4nd/wasman v0.0.0-20220422074058-87e38ef26abd
 	tinygo.org/x/drivers v0.26.0
 )
 
