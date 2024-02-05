@@ -3,43 +3,52 @@ package main
 import (
 	"bytes"
 	_ "embed"
+	"fmt"
 
 	"github.com/c0mm4nd/wasman"
 	"github.com/c0mm4nd/wasman/config"
 )
 
-//go:embed demo.wat
+//go:embed demo.wasm
 var binaryModule []byte
 
-func run() error {
-	device := NewDevice()
-	_ = device
-	linker1 := wasman.NewLinker(config.LinkerConfig{})
+func run(bridge *Bridge) (err error) {
+	defer func() {
+		p := recover()
+		if p != nil {
+			err = fmt.Errorf("panic: %v", p)
+		}
+	}()
+	bridge.EchoText("init")
+	linker := wasman.NewLinker(config.LinkerConfig{})
 	f := bytes.NewReader(binaryModule)
 	module, err := wasman.NewModule(config.ModuleConfig{}, f)
 	if err != nil {
 		return err
 	}
-	_ = module
-	modules := make(map[string]*wasman.Module)
-	ins, err := wasman.NewInstance(module, modules)
-	// ins, err := linker1.Instantiate(module)
+	bridge.EchoText("instantiate")
+	ins, err := linker.Instantiate(module)
+	bridge.EchoText("define funcs")
+	linker.DefineFunc("pybadge", "echo_i32", bridge.EchoI32)
 	if err != nil {
 		return err
 	}
-	_ = linker1
 	_ = ins
+	bridge.EchoText("start")
 	// _, _, err = ins.CallExportedFunc("update")
-	// if err != nil {
-	// 	return err
-	// }
-
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
 func main() {
-	err := run()
+	device := NewDevice()
+	bridge := NewBridge(&device)
+	err := run(bridge)
 	if err != nil {
-		panic(err)
+		bridge.EchoText(err.Error())
+	}
+	for {
 	}
 }
