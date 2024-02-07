@@ -4,6 +4,7 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
+	"time"
 
 	"github.com/c0mm4nd/wasman"
 	"github.com/c0mm4nd/wasman/config"
@@ -19,27 +20,28 @@ func run(bridge *Bridge) (err error) {
 			err = fmt.Errorf("panic: %v", p)
 		}
 	}()
-	bridge.EchoText("init")
 	linker := wasman.NewLinker(config.LinkerConfig{})
+	wasman.DefineFunc10(linker, "pybadge", "echo_i32", bridge.EchoI32)
+
 	f := bytes.NewReader(binaryModule)
-	module, err := wasman.NewModule(config.ModuleConfig{}, f)
+	mconf := config.ModuleConfig{Recover: true, Logger: bridge.EchoText}
+	module, err := wasman.NewModule(mconf, f)
 	if err != nil {
 		return err
 	}
-	bridge.EchoText("instantiate")
 	ins, err := linker.Instantiate(module)
-	bridge.EchoText("define funcs")
-	linker.DefineFunc("pybadge", "echo_i32", bridge.EchoI32)
 	if err != nil {
 		return err
 	}
-	_ = ins
 	bridge.EchoText("start")
-	// _, _, err = ins.CallExportedFunc("update")
-	if err != nil {
-		return err
+	for {
+		_, _, err = ins.CallExportedFunc("update")
+		if err != nil {
+			return err
+		}
+		time.Sleep(20 * time.Millisecond)
 	}
-	return nil
+	// return nil
 }
 
 func main() {
@@ -49,6 +51,5 @@ func main() {
 	if err != nil {
 		bridge.EchoText(err.Error())
 	}
-	for {
-	}
+	select {}
 }

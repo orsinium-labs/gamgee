@@ -31,7 +31,7 @@ func (b *Bridge) EchoText(text string) {
 		b.d.Display,
 		&font,
 		1,
-		10,
+		12,
 		text,
 		[]color.RGBA{red},
 	)

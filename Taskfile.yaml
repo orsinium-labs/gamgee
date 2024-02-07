@@ -3,6 +3,8 @@ version: "3"
 
 tasks:
   build-wasm:
+    sources:
+      - demo.wat
     cmds:
       - wat2wasm demo.wat
   flash:

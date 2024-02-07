@@ -1,3 +1,4 @@
 /.vscode/
 /*.wasm
 /*.elf
+/.task/

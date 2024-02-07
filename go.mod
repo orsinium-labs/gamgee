@@ -2,6 +2,10 @@ module github.com/orsinium-labs/pybadge-wasm
 
 go 1.21.3
 
+replace (
+	github.com/c0mm4nd/wasman => ../wasman
+)
+
 require (
 	github.com/c0mm4nd/wasman v0.0.0-20220422074058-87e38ef26abd
 	tinygo.org/x/drivers v0.26.0
