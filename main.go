@@ -8,6 +8,7 @@ import (
 
 	"github.com/c0mm4nd/wasman"
 	"github.com/c0mm4nd/wasman/config"
+	"github.com/c0mm4nd/wasman/tollstation"
 )
 
 //go:embed demo.wasm
@@ -24,7 +25,13 @@ func run(bridge *Bridge) (err error) {
 	wasman.DefineFunc10(linker, "pybadge", "echo_i32", bridge.EchoI32)
 
 	f := bytes.NewReader(binaryModule)
-	mconf := config.ModuleConfig{Recover: true, Logger: bridge.EchoText}
+	// fuel consumption to interrupt infinite loops
+	ts := tollstation.NewSimpleTollStation(10_000)
+	mconf := config.ModuleConfig{
+		Recover:     true,
+		Logger:      bridge.EchoText,
+		TollStation: ts,
+	}
 	module, err := wasman.NewModule(mconf, f)
 	if err != nil {
 		return err
@@ -40,6 +47,8 @@ func run(bridge *Bridge) (err error) {
 			return err
 		}
 		time.Sleep(20 * time.Millisecond)
+		// reset fuel counter after each update
+		ts.AddToll(-ts.GetToll())
 	}
 	// return nil
 }
