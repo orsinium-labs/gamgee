@@ -4,7 +4,6 @@ import (
 	"bytes"
 	_ "embed"
 	"fmt"
-	"time"
 
 	"github.com/c0mm4nd/wasman"
 	"github.com/c0mm4nd/wasman/config"
@@ -41,14 +40,16 @@ func run(bridge *Bridge) (err error) {
 		return err
 	}
 	bridge.EchoText("start")
+
+	// frameRate := NewFrameRate()
 	for {
 		_, _, err = ins.CallExportedFunc("update")
 		if err != nil {
 			return err
 		}
-		time.Sleep(20 * time.Millisecond)
 		// reset fuel counter after each update
 		ts.AddToll(-ts.GetToll())
+		// bridge.EchoText(fmt.Sprintf("%d", frameRate.Update()))
 	}
 	// return nil
 }
