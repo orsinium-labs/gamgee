@@ -339,17 +339,21 @@ dependencies = [
  "document-features",
  "edgebadge",
  "embedded-graphics",
+ "embedded-hal",
  "heapless",
  "num_enum",
  "rustc_version 0.4.0",
+ "smart-leds-trait",
  "st7735-lcd",
  "usbd-serial",
+ "ws2812-timer-delay",
 ]
 
 [[package]]
 name = "pybadge-wasm"
 version = "0.1.0"
 dependencies = [
+ "embedded-graphics",
  "pybadge-high",
 ]
 
