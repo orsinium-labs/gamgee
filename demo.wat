@@ -1,6 +1,6 @@
 (module
   (import "pybadge" "echo_i32" (func $echo_i32 (param i32)))
-  (memory 1)
+  (; (memory 1) ;)
   (export "update" (func $update))
   (global $g (mut i32) (i32.const 0))
   (func $update
