@@ -10,7 +10,7 @@
 | [go-wasm3]    | C+Go      |    | 2y | 🔬 |    |
 | [wasmer-go]   | Rust+Go   | 💀 | 2y |    |    |
 | [wasmtime-go] | Rust+Go   |    |    |    |    |
-| [wasmi]       | Rust      |    |    |    |    |
+| [wasmi]       | Rust      |    |    | 🔬 |    |
 
 [wagon]:        https://github.com/go-interpreter/wagon
 [wasmer-go]:    https://github.com/wasmerio/wasmer-go
