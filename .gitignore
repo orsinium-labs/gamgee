@@ -1,5 +1,5 @@
 /.vscode/
-/*.wasm
+*.wasm
 /*.elf
 /.task/
 
