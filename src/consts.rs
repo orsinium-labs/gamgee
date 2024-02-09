@@ -1,3 +1,5 @@
+const SCREEN_WIDTH: u32 = 160;
+const SCREEN_HEIGHT: u32 = 128;
 const SCREEN_SIZE: u32 = 160;
 
 const PALETTE: usize = 0x04;

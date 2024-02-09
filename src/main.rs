@@ -37,7 +37,7 @@ fn main() -> ! {
         .draw(&mut pybadge.display)
         .unwrap();
     let engine = wasmi::Engine::default();
-    let bytes = include_bytes!("../demo.wasm");
+    let bytes = include_bytes!("../snake/build/cart.wasm");
     let module = wasmi::Module::new(&engine, &bytes[..]).unwrap();
     let bridge = Bridge::new(pybadge);
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
@@ -97,6 +97,15 @@ fn main() -> ! {
             caller.data_mut().wasm4_rect(x, y, width, height)
         },
     );
+    let text = wasmi::Func::wrap(&mut store, |mut caller: C, text: i32, x: i32, y: i32| {
+        caller.data_mut().wasm4_text(text, x, y)
+    });
+    let text_utf8 = wasmi::Func::wrap(
+        &mut store,
+        |mut caller: C, text: i32, byte_len: u32, x: i32, y: i32| {
+            caller.data_mut().wasm4_text_utf8(text, byte_len, x, y)
+        },
+    );
     let text_utf16 = wasmi::Func::wrap(
         &mut store,
         |mut caller: C, text: i32, byte_len: u32, x: i32, y: i32| {
@@ -117,6 +126,12 @@ fn main() -> ! {
     let diskw = wasmi::Func::wrap(&mut store, |mut caller: C, src: i32, size: u32| {
         caller.data_mut().wasm4_diskw(src, size)
     });
+    let trace = wasmi::Func::wrap(&mut store, |mut caller: C, str: i32| {
+        caller.data_mut().wasm4_trace(str)
+    });
+    let trace_utf8 = wasmi::Func::wrap(&mut store, |mut caller: C, str: i32, byte_len: u32| {
+        caller.data_mut().wasm4_trace_utf8(str, byte_len)
+    });
     let trace_utf16 = wasmi::Func::wrap(&mut store, |mut caller: C, str: i32, byte_len: u32| {
         caller.data_mut().wasm4_trace_utf16(str, byte_len)
     });
@@ -128,10 +143,14 @@ fn main() -> ! {
     linker.define("env", "vline", vline).unwrap();
     linker.define("env", "oval", oval).unwrap();
     linker.define("env", "rect", rect).unwrap();
+    linker.define("env", "text", text).unwrap();
+    linker.define("env", "textUtf8", text_utf8).unwrap();
     linker.define("env", "textUtf16", text_utf16).unwrap();
     linker.define("env", "tone", tone).unwrap();
     linker.define("env", "diskr", diskr).unwrap();
     linker.define("env", "diskw", diskw).unwrap();
+    linker.define("env", "trace", trace).unwrap();
+    linker.define("env", "traceUtf8", trace_utf8).unwrap();
     linker.define("env", "traceUtf16", trace_utf16).unwrap();
 
     let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();

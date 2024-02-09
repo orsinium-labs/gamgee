@@ -45,8 +45,16 @@ impl Bridge {
         self.command = param
     }
 
-    pub fn wasm4_blit(&self, spritePtr: i32, x: i32, y: i32, width: u32, height: u32, flags: u32) {
-        todo!();
+    pub fn wasm4_blit(
+        &mut self,
+        spritePtr: i32,
+        x: i32,
+        y: i32,
+        width: u32,
+        height: u32,
+        flags: u32,
+    ) {
+        // ...
     }
 
     pub fn wasm4_blit_sub(
@@ -61,46 +69,62 @@ impl Bridge {
         stride: i32,
         flags: u32,
     ) {
-        todo!();
+        // ...
     }
 
-    pub fn wasm4_line(&self, x1: i32, y1: i32, x2: i32, y2: i32) {
-        todo!();
+    pub fn wasm4_line(&mut self, x1: i32, y1: i32, x2: i32, y2: i32) {
+        // ...
     }
 
-    pub fn wasm4_hline(&self, x: i32, y: i32, len: u32) {
-        todo!();
+    pub fn wasm4_hline(&mut self, x: i32, y: i32, len: u32) {
+        // ...
     }
 
-    pub fn wasm4_vline(&self, x: i32, y: i32, len: u32) {
-        todo!();
+    pub fn wasm4_vline(&mut self, x: i32, y: i32, len: u32) {
+        // ...
     }
 
-    pub fn wasm4_oval(&self, x: i32, y: i32, width: u32, height: u32) {
-        todo!();
+    pub fn wasm4_oval(&mut self, x: i32, y: i32, width: u32, height: u32) {
+        // ...
     }
 
-    pub fn wasm4_rect(&self, x: i32, y: i32, width: u32, height: u32) {
-        todo!();
+    pub fn wasm4_rect(&mut self, x: i32, y: i32, width: u32, height: u32) {
+        // ...
     }
 
-    pub fn wasm4_text_utf16(&self, text: i32, byte_len: u32, x: i32, y: i32) {
-        todo!();
+    pub fn wasm4_text(&mut self, text: i32, x: i32, y: i32) {
+        // ...
     }
 
-    pub fn wasm4_tone(&self, frequency: u32, duration: u32, volume: u32, flags: u32) {
-        todo!();
+    pub fn wasm4_text_utf8(&mut self, text: i32, byte_len: u32, x: i32, y: i32) {
+        // ...
     }
 
-    pub fn wasm4_diskr(&self, dest: i32, size: u32) -> i32 {
-        todo!();
+    pub fn wasm4_text_utf16(&mut self, text: i32, byte_len: u32, x: i32, y: i32) {
+        // ...
     }
 
-    pub fn wasm4_diskw(&self, src: i32, size: u32) -> i32 {
-        todo!();
+    pub fn wasm4_tone(&mut self, frequency: u32, duration: u32, volume: u32, flags: u32) {
+        // ...
     }
 
-    pub fn wasm4_trace_utf16(&self, str: i32, byte_len: u32) {
-        todo!();
+    pub fn wasm4_diskr(&mut self, dest: i32, size: u32) -> i32 {
+        0
+    }
+
+    pub fn wasm4_diskw(&mut self, src: i32, size: u32) -> i32 {
+        0
+    }
+
+    pub fn wasm4_trace(&mut self, str: i32) {
+        // ...
+    }
+
+    pub fn wasm4_trace_utf8(&mut self, str: i32, byte_len: u32) {
+        // ...
+    }
+
+    pub fn wasm4_trace_utf16(&mut self, str: i32, byte_len: u32) {
+        // ...
     }
 }
