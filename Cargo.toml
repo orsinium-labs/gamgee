@@ -9,6 +9,6 @@ edition = "2021"
 cortex-m-rt = "0.7.3"
 embedded-alloc = "0.5.1"
 embedded-graphics = "0.7.1"
-pybadge-high = { version = "0.2.0", features = ["neopixel"] }
+pybadge-high = { version = "0.2.0", features = ["neopixel", "bluescreen-message-nightly"] }
 wasmi = { version = "0.31.2", default-features = false }
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }

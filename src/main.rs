@@ -4,7 +4,6 @@
 extern crate alloc;
 use alloc::string::ToString;
 use core::cell::Cell;
-use cortex_m_rt::entry;
 use embedded_alloc::Heap;
 use embedded_graphics::{
     mono_font::{ascii::FONT_6X10, MonoTextStyle},
@@ -23,9 +22,6 @@ pub struct InnerState {
 }
 
 impl InnerState {
-    fn set_command(&mut self, param: i32) {
-        self.command = param
-    }
     fn get_command(&self) -> i32 {
         self.command
     }
@@ -35,18 +31,23 @@ struct HostState {
     state: Cell<InnerState>,
 }
 
+impl HostState {
+    fn set_command(&mut self, param: i32) {
+        self.state.get_mut().command = param
+    }
+}
+
 #[entry]
 fn main() -> ! {
     {
         use core::mem::MaybeUninit;
-        const HEAP_SIZE: usize = 1024;
+        const HEAP_SIZE: usize = 16 * 1024;
         static mut HEAP_MEM: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
         unsafe { HEAP.init(HEAP_MEM.as_ptr() as usize, HEAP_SIZE) }
     }
 
-    let red = Color::new(255, 0, 0);
     let mut pybadge = PyBadge::take().unwrap();
-    pybadge.display.clear(red).unwrap();
+    pybadge.display.clear(Color::RED).unwrap();
     let style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
     Text::new("Hello Rust!", Point::new(20, 30), style)
         .draw(&mut pybadge.display)
@@ -60,7 +61,7 @@ fn main() -> ! {
     let echo_i32 = wasmi::Func::wrap(
         &mut store,
         |mut caller: wasmi::Caller<'_, HostState>, param: i32| {
-            caller.data_mut().state.get_mut().set_command(param);
+            caller.data_mut().set_command(param);
         },
     );
     let mut linker = <wasmi::Linker<HostState>>::new(&engine);
@@ -71,13 +72,15 @@ fn main() -> ! {
         .start(&mut store)
         .unwrap();
     let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
-    update.call(&mut store, ()).unwrap();
-    let state;
-    unsafe {
-        state = inner_state.as_ref().unwrap();
+    loop {
+        update.call(&mut store, ()).unwrap();
+        let state;
+        unsafe {
+            state = inner_state.as_ref().unwrap();
+        }
+        pybadge.display.clear(Color::BLUE).unwrap();
+        Text::new(&state.get_command().to_string(), Point::new(20, 30), style)
+            .draw(&mut pybadge.display)
+            .unwrap();
     }
-    Text::new(&state.get_command().to_string(), Point::new(20, 30), style)
-        .draw(&mut pybadge.display)
-        .unwrap();
-    loop {}
 }
