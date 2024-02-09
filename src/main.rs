@@ -134,8 +134,14 @@ fn main() -> ! {
     linker.define("env", "diskw", diskw).unwrap();
     linker.define("env", "traceUtf16", trace_utf16).unwrap();
 
+    let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();
+    let mem = wasmi::Memory::new(&mut store, mem_type).unwrap();
+    linker.define("env", "memory", mem).unwrap();
+
     let instance_pre = linker.instantiate(&mut store, &module).unwrap();
     let instance = instance_pre.start(&mut store).unwrap();
+    let memory = instance.get_memory(&store, "memory");
+    store.data_mut().set_memory(memory);
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
         start.call(&mut store, ()).unwrap();
     }

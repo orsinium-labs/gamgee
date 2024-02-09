@@ -11,6 +11,7 @@ use pybadge_high::{Color, PyBadge};
 pub struct Bridge {
     command: i32,
     pybadge: PyBadge,
+    memory: Option<wasmi::Memory>,
 }
 
 impl Bridge {
@@ -18,7 +19,16 @@ impl Bridge {
         Self {
             command: 0,
             pybadge,
+            memory: None,
         }
+    }
+
+    pub fn set_memory(&mut self, memory: Option<wasmi::Memory>) {
+        self.memory = memory;
+    }
+
+    pub fn start(&mut self) {
+        // 0xE0, 0xF8, 0xCF
     }
 
     pub fn update(&mut self) {
