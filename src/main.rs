@@ -136,6 +136,9 @@ fn main() -> ! {
 
     let instance_pre = linker.instantiate(&mut store, &module).unwrap();
     let instance = instance_pre.start(&mut store).unwrap();
+    if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
+        start.call(&mut store, ()).unwrap();
+    }
     let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
     loop {
         update.call(&mut store, ()).unwrap();
