@@ -3,7 +3,6 @@
 
 extern crate alloc;
 use alloc::string::ToString;
-use core::cell::Cell;
 use embedded_alloc::Heap;
 use embedded_graphics::{
     mono_font::{ascii::FONT_6X10, MonoTextStyle},
@@ -17,23 +16,17 @@ use pybadge_high as pybadge;
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
 
-pub struct InnerState {
-    pub command: i32,
-}
-
-impl InnerState {
-    fn get_command(&self) -> i32 {
-        self.command
-    }
-}
-
 struct HostState {
-    state: Cell<InnerState>,
+    pub command: i32,
 }
 
 impl HostState {
     fn set_command(&mut self, param: i32) {
-        self.state.get_mut().command = param
+        self.command = param
+    }
+
+    fn get_command(&self) -> i32 {
+        self.command
     }
 }
 
@@ -55,9 +48,7 @@ fn main() -> ! {
     let engine = wasmi::Engine::default();
     let bytes = include_bytes!("../demo.wasm");
     let module = wasmi::Module::new(&engine, &bytes[..]).unwrap();
-    let state = Cell::new(InnerState { command: 0 });
-    let inner_state = state.as_ptr();
-    let mut store = <wasmi::Store<HostState>>::new(&engine, HostState { state });
+    let mut store = <wasmi::Store<HostState>>::new(&engine, HostState { command: 0 });
     let echo_i32 = wasmi::Func::wrap(
         &mut store,
         |mut caller: wasmi::Caller<'_, HostState>, param: i32| {
@@ -74,12 +65,9 @@ fn main() -> ! {
     let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
     loop {
         update.call(&mut store, ()).unwrap();
-        let state;
-        unsafe {
-            state = inner_state.as_ref().unwrap();
-        }
+        let cmd = store.data().get_command();
         pybadge.display.clear(Color::BLUE).unwrap();
-        Text::new(&state.get_command().to_string(), Point::new(20, 30), style)
+        Text::new(&cmd.to_string(), Point::new(20, 30), style)
             .draw(&mut pybadge.display)
             .unwrap();
     }

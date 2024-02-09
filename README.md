@@ -35,3 +35,5 @@ sudo apt-get install libudev-dev libusb-1.0-0-dev
 cargo install hf2-cli
 rustup target install thumbv7em-none-eabihf
 ```
+
+<https://github.com/gwsystems/aWsm>

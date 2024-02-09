@@ -11,4 +11,4 @@ tasks:
     desc: "Flash the demo to pybadge"
     cmds:
       - task: build-wasm
-      - tinygo flash -size short -target pybadge {{.CLI_ARGS}} .
+      - cargo run --release
