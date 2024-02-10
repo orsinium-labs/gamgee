@@ -3,6 +3,7 @@
 
 mod bridge;
 mod consts;
+mod framebuf;
 use bridge::Bridge;
 extern crate alloc;
 use embedded_alloc::Heap;
