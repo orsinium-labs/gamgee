@@ -1,3 +1,4 @@
+use crate::framebuf::FrameBuf;
 use alloc::string::ToString;
 use embedded_graphics::geometry::Point;
 use embedded_graphics::{
@@ -11,7 +12,6 @@ use pybadge_high::{Color, PyBadge};
 pub struct Bridge {
     command: i32,
     pybadge: PyBadge,
-    memory: Option<wasmi::Memory>,
 }
 
 impl Bridge {
@@ -19,12 +19,7 @@ impl Bridge {
         Self {
             command: 0,
             pybadge,
-            memory: None,
         }
-    }
-
-    pub fn set_memory(&mut self, memory: Option<wasmi::Memory>) {
-        self.memory = memory;
     }
 
     pub fn start(&mut self) {
@@ -76,7 +71,7 @@ impl Bridge {
         // ...
     }
 
-    pub fn wasm4_hline(&mut self, x: i32, y: i32, len: u32) {
+    pub fn wasm4_hline(&self, frame_buf: FrameBuf, x: i32, y: i32, len: u32) {
         // ...
     }
 

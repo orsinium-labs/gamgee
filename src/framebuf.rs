@@ -29,13 +29,28 @@ impl PixelColor for Color4 {
 
 pub struct FrameBuf<'a> {
     // https://wasm4.org/docs/reference/memory/#palette
-    palette_raw: &'a [u8; 16],
+    palette_raw: &'a [u8],
 
     // https://wasm4.org/docs/reference/memory/#framebuffer
-    data: &'a mut [u8; 160 * 160 / 4],
+    data: &'a mut [u8],
 }
 
 impl<'a> FrameBuf<'a> {
+    pub fn from_memory(data: &'a mut [u8]) -> FrameBuf<'a> {
+        // https://doc.rust-lang.org/nomicon/borrow-splitting.html
+        let ptr = data.as_mut_ptr();
+        let palette_raw: &'a [u8];
+        let frame_buffer: &'a mut [u8];
+        unsafe {
+            palette_raw = core::slice::from_raw_parts(ptr.add(4), 16);
+            frame_buffer = core::slice::from_raw_parts_mut(ptr.add(0x19a0), 160 * 160 / 4);
+        }
+        FrameBuf {
+            palette_raw,
+            data: frame_buffer,
+        }
+    }
+
     fn get_color(&self, color_id: u8) -> Rgb565 {
         let start = (color_id * 4) as usize;
         let raw_color = &self.palette_raw[start..(start + 4)];

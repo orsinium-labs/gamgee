@@ -13,6 +13,7 @@ use embedded_graphics::{
     prelude::*,
     text::Text,
 };
+use framebuf::FrameBuf;
 use pybadge::prelude::entry;
 use pybadge::{Color, PyBadge};
 use pybadge_high as pybadge;
@@ -44,6 +45,7 @@ fn main() -> ! {
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
     let mut linker = <wasmi::Linker<Bridge>>::new(&engine);
 
+    let instance: wasmi::Instance;
     let echo_i32 = wasmi::Func::wrap(&mut store, |mut caller: C, param: i32| {
         caller.data_mut().echo_i32(param);
     });
@@ -81,7 +83,13 @@ fn main() -> ! {
         },
     );
     let hline = wasmi::Func::wrap(&mut store, |mut caller: C, x: i32, y: i32, len: u32| {
-        caller.data_mut().wasm4_hline(x, y, len)
+        let mem = match caller.get_export("memory") {
+            Some(wasmi::Extern::Memory(mem)) => mem,
+            _ => panic!("memory not found"),
+        };
+        let (data, bridge) = mem.data_and_store_mut(&mut caller);
+        let frame_buf = FrameBuf::from_memory(data);
+        bridge.wasm4_hline(frame_buf, x, y, len)
     });
     let vline = wasmi::Func::wrap(&mut store, |mut caller: C, x: i32, y: i32, len: u32| {
         caller.data_mut().wasm4_vline(x, y, len)
@@ -160,8 +168,7 @@ fn main() -> ! {
 
     let instance_pre = linker.instantiate(&mut store, &module).unwrap();
     let instance = instance_pre.start(&mut store).unwrap();
-    let memory = instance.get_memory(&store, "memory");
-    store.data_mut().set_memory(memory);
+    // store.data_mut().set_memory(memory, &mut store);
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
         start.call(&mut store, ()).unwrap();
     }
