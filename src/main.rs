@@ -44,8 +44,26 @@ fn main() -> ! {
     let bridge = Bridge::new(pybadge);
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
     let mut linker = <wasmi::Linker<Bridge>>::new(&engine);
+    link(&mut linker, &mut store);
 
-    let instance: wasmi::Instance;
+    let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();
+    let mem = wasmi::Memory::new(&mut store, mem_type).unwrap();
+    linker.define("env", "memory", mem).unwrap();
+
+    let instance_pre = linker.instantiate(&mut store, &module).unwrap();
+    let instance = instance_pre.start(&mut store).unwrap();
+    // store.data_mut().set_memory(memory, &mut store);
+    if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
+        start.call(&mut store, ()).unwrap();
+    }
+    let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
+    loop {
+        update.call(&mut store, ()).unwrap();
+        store.data_mut().update();
+    }
+}
+
+fn link(linker: &mut wasmi::Linker<Bridge>, mut store: &mut wasmi::Store<Bridge>) {
     let echo_i32 = wasmi::Func::wrap(&mut store, |mut caller: C, param: i32| {
         caller.data_mut().echo_i32(param);
     });
@@ -161,20 +179,4 @@ fn main() -> ! {
     linker.define("env", "trace", trace).unwrap();
     linker.define("env", "traceUtf8", trace_utf8).unwrap();
     linker.define("env", "traceUtf16", trace_utf16).unwrap();
-
-    let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();
-    let mem = wasmi::Memory::new(&mut store, mem_type).unwrap();
-    linker.define("env", "memory", mem).unwrap();
-
-    let instance_pre = linker.instantiate(&mut store, &module).unwrap();
-    let instance = instance_pre.start(&mut store).unwrap();
-    // store.data_mut().set_memory(memory, &mut store);
-    if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
-        start.call(&mut store, ()).unwrap();
-    }
-    let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
-    loop {
-        update.call(&mut store, ()).unwrap();
-        store.data_mut().update();
-    }
 }

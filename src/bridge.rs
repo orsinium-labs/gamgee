@@ -71,7 +71,7 @@ impl Bridge {
         // ...
     }
 
-    pub fn wasm4_hline(&self, frame_buf: FrameBuf, x: i32, y: i32, len: u32) {
+    pub fn wasm4_hline(&mut self, frame_buf: FrameBuf, x: i32, y: i32, len: u32) {
         // ...
     }
 
