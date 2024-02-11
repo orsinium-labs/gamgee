@@ -22,11 +22,12 @@ impl Bridge {
         }
     }
 
-    pub fn start(&mut self) {
+    /// Initialize memory and stuff. Called before the application is started.
+    pub fn start(&mut self, frame_buf: FrameBuf) {
         // 0xE0, 0xF8, 0xCF
     }
 
-    pub fn update(&mut self) {
+    pub fn update(&mut self, frame_buf: FrameBuf) {
         let style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
         self.pybadge.display.clear(Color::BLUE).unwrap();
         let text = self.command.to_string();

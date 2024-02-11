@@ -14,6 +14,7 @@ use embedded_graphics::{
     prelude::*,
     text::Text,
 };
+use framebuf::FrameBuf;
 use linking::link;
 use pybadge::prelude::entry;
 use pybadge::{Color, PyBadge};
@@ -52,12 +53,27 @@ fn main() -> ! {
     let instance_pre = linker.instantiate(&mut store, &module).unwrap();
     let instance = instance_pre.start(&mut store).unwrap();
     // store.data_mut().set_memory(memory, &mut store);
+
+    let memory = match linker.get(&mut store, "env", "memory") {
+        Some(wasmi::Extern::Memory(memory)) => memory,
+        _ => panic!("memory not found"),
+    };
+    let (data, bridge) = memory.data_and_store_mut(&mut store);
+    let frame_buf = FrameBuf::from_memory(data);
+    bridge.start(frame_buf);
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
         start.call(&mut store, ()).unwrap();
     }
+
     let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
     loop {
         update.call(&mut store, ()).unwrap();
-        store.data_mut().update();
+        let memory = match linker.get(&mut store, "env", "memory") {
+            Some(wasmi::Extern::Memory(memory)) => memory,
+            _ => panic!("memory not found"),
+        };
+        let (data, bridge) = memory.data_and_store_mut(&mut store);
+        let frame_buf = FrameBuf::from_memory(data);
+        bridge.update(frame_buf);
     }
 }
