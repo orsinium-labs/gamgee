@@ -1,7 +1,8 @@
+use crate::consts::*;
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
 use embedded_graphics::pixelcolor::raw::{RawData, RawU2};
-use embedded_graphics::pixelcolor::{Bgr888, PixelColor, Rgb565, RgbColor};
+use embedded_graphics::pixelcolor::{PixelColor, Rgb565};
 use embedded_graphics::prelude::{Pixel, Size};
 
 /// Represents one of four colors in the palette with a 0-3 number, taking 2 bits.
@@ -42,8 +43,8 @@ impl<'a> FrameBuf<'a> {
         let palette_raw: &'a [u8];
         let frame_buffer: &'a mut [u8];
         unsafe {
-            palette_raw = core::slice::from_raw_parts(ptr.add(4), 16);
-            frame_buffer = core::slice::from_raw_parts_mut(ptr.add(0x19a0), 160 * 160 / 4);
+            palette_raw = core::slice::from_raw_parts(ptr.add(PALETTE), 16);
+            frame_buffer = core::slice::from_raw_parts_mut(ptr.add(FRAMEBUFFER), 160 * 160 / 4);
         }
         FrameBuf {
             palette_raw,
@@ -118,16 +119,14 @@ impl<'a> Iterator for PixelIterator<'a> {
     type Item = Pixel<Rgb565>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.pos >= 160 * 160 {
-            return None;
-        }
-        let mut y = self.pos as i32 / 4 / 160;
-        let mut x = self.pos as i32 / 4 % 160;
+        let mut y = self.pos as i32 / 160;
+        let mut x = self.pos as i32 % 160;
         if x >= 160 {
             x = 0;
             y += 1;
         }
         if y >= 160 {
+            assert_eq!(self.pos, 160 * 160);
             return None;
         }
         let byte = self.buf.data[self.pos / 4];
