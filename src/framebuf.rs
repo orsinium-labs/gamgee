@@ -119,6 +119,9 @@ impl<'a> Iterator for PixelIterator<'a> {
     type Item = Pixel<Rgb565>;
 
     fn next(&mut self) -> Option<Self::Item> {
+        if self.pos >= 160 * 160 {
+            return None;
+        }
         let mut y = self.pos as i32 / 4 / 160;
         let mut x = self.pos as i32 / 4 % 160;
         if x >= 160 {
