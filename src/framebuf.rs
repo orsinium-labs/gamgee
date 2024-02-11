@@ -80,7 +80,16 @@ impl<'a> FrameBuf<'a> {
     }
 
     pub fn iter(&'a self) -> PixelIterator<'a> {
-        PixelIterator { buf: self, pos: 0 }
+        PixelIterator {
+            buf:     self,
+            pos:     0,
+            palette: [
+                self.get_color(0),
+                self.get_color(1),
+                self.get_color(2),
+                self.get_color(3),
+            ],
+        }
     }
 }
 
@@ -109,10 +118,9 @@ impl<'a> DrawTarget for FrameBuf<'a> {
 }
 
 pub struct PixelIterator<'a> {
-    buf: &'a FrameBuf<'a>,
-
-    // The next color offset.
-    pos: usize,
+    buf:     &'a FrameBuf<'a>,
+    pos:     usize,
+    palette: [Rgb565; 4],
 }
 
 impl<'a> Iterator for PixelIterator<'a> {
@@ -132,7 +140,7 @@ impl<'a> Iterator for PixelIterator<'a> {
         let byte = self.buf.data[self.pos / 4];
         let bit_offset = self.pos % 4 * 2;
         let color_id = (byte >> bit_offset) & 0b11;
-        let color = self.buf.get_color(color_id);
+        let color = self.palette[color_id as usize];
         self.pos += 1;
         let point = Point { x, y };
         Some(Pixel(point, color))
