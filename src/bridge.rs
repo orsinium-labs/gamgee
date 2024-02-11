@@ -61,7 +61,8 @@ impl Bridge {
         //     .unwrap();
         // self.pybadge.display.write_pixels(frame_buf.iter());
         self.pybadge.display.draw_iter(frame_buf.iter()).unwrap();
-        self.clear_frame_buffer(data)
+        self.clear_frame_buffer(data);
+        self.update_gamepad(data);
     }
 
     fn clear_frame_buffer(&self, data: &mut [u8]) {
@@ -72,6 +73,29 @@ impl Bridge {
         #[allow(clippy::needless_range_loop)]
         for addr in 0x00a0..0x19a0 {
             data[addr] = 0;
+        }
+    }
+
+    fn update_gamepad(&self, data: &mut [u8]) {
+        // https://wasm4.org/docs/reference/memory#gamepads
+        data[GAMEPAD1] = 0;
+        if self.pybadge.buttons.a_pressed() {
+            data[GAMEPAD1] |= 0b10;
+        }
+        if self.pybadge.buttons.b_pressed() {
+            data[GAMEPAD1] |= 0b01;
+        }
+        if self.pybadge.buttons.left_pressed() {
+            data[GAMEPAD1] |= 0b1 << 4;
+        }
+        if self.pybadge.buttons.right_pressed() {
+            data[GAMEPAD1] |= 0b1 << 5;
+        }
+        if self.pybadge.buttons.up_pressed() {
+            data[GAMEPAD1] |= 0b1 << 6;
+        }
+        if self.pybadge.buttons.down_pressed() {
+            data[GAMEPAD1] |= 0b1 << 7;
         }
     }
 
