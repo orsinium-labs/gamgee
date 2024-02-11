@@ -100,7 +100,7 @@ impl Bridge {
     pub fn wasm4_hline(&mut self, data: &mut [u8], x: i32, y: i32, len: i32) {
         let line = Line::new(Point { x, y }, Point { x: x + len, y });
         let mut frame_buf = FrameBuf::from_memory(data);
-        let color = Color4(RawU2::from_u32(2));
+        let color = Color4(2);
         let style = PrimitiveStyle::with_stroke(color, 1);
         line.draw_styled(&style, &mut frame_buf).unwrap();
     }

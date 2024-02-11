@@ -1,17 +1,17 @@
 use crate::consts::*;
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
-use embedded_graphics::pixelcolor::raw::{RawData, RawU2};
+use embedded_graphics::pixelcolor::raw::RawU2;
 use embedded_graphics::pixelcolor::{PixelColor, Rgb565};
 use embedded_graphics::prelude::{Pixel, Size};
 
 /// Represents one of four colors in the palette with a 0-3 number, taking 2 bits.
 #[derive(PartialEq, Copy, Clone)]
-pub struct Color4(pub RawU2);
+pub struct Color4(pub u8);
 
 impl Color4 {
     fn as_byte(&self) -> u8 {
-        self.0.into_inner()
+        self.0
     }
 
     // pub fn from_byte(byte: &u8) -> &[Color4] {
