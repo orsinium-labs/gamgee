@@ -60,8 +60,7 @@ fn main() -> ! {
         _ => panic!("memory not found"),
     };
     let (data, bridge) = memory.data_and_store_mut(&mut store);
-    let frame_buf = FrameBuf::from_memory(data);
-    bridge.start(frame_buf);
+    bridge.init(data);
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
         start.call(&mut store, ()).unwrap();
     }

@@ -22,18 +22,24 @@ impl Bridge {
     }
 
     /// Initialize memory and stuff. Called before the application is started.
-    pub fn start(&mut self, frame_buf: FrameBuf) {
-        // 0xE0, 0xF8, 0xCF
+    pub fn init(&mut self, data: &mut [u8]) {
+        write32le(&mut data[4..], 0xe0f8cf);
+        write32le(&mut data[8..], 0x86c06c);
+        write32le(&mut data[12..], 0x306850);
+        write32le(&mut data[16..], 0x071821);
+        // data[4..8] = [0x00_u8, 0xff_u8, 0xf6_u8, 0xd3_u8];
+        // data
+        let frame_buf = FrameBuf::from_memory(data);
     }
 
     pub fn update(&mut self, frame_buf: FrameBuf) {
-        let style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
-        self.pybadge.display.clear(Color::BLUE).unwrap();
-        let text = self.command.to_string();
-        let pos = Point::new(20, 30);
-        Text::new(&text, pos, style)
-            .draw(&mut self.pybadge.display)
-            .unwrap();
+        // let style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
+        // self.pybadge.display.clear(Color::BLUE).unwrap();
+        // let text = self.command.to_string();
+        // let pos = Point::new(20, 30);
+        // Text::new(&text, pos, style)
+        //     .draw(&mut self.pybadge.display)
+        //     .unwrap();
     }
 
     pub fn echo_i32(&mut self, param: i32) {
@@ -122,4 +128,12 @@ impl Bridge {
     pub fn wasm4_trace_utf16(&mut self, str: i32, byte_len: u32) {
         // ...
     }
+}
+
+fn write32le(target: &mut [u8], val: u32) {
+    let val = val.to_le();
+    target[0] = (val & 0x0000_00ff) as u8;
+    target[1] = (val & 0x0000_ff00) as u8;
+    target[2] = (val & 0x00ff_0000) as u8;
+    target[3] = (val & 0xff00_0000) as u8;
 }
