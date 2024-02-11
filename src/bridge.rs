@@ -1,12 +1,11 @@
 use crate::framebuf::FrameBuf;
 use alloc::string::ToString;
 use embedded_graphics::geometry::Point;
-use embedded_graphics::{
-    mono_font::{ascii::FONT_6X10, MonoTextStyle},
-    pixelcolor::Rgb565,
-    prelude::*,
-    text::Text,
-};
+use embedded_graphics::mono_font::ascii::FONT_6X10;
+use embedded_graphics::mono_font::MonoTextStyle;
+use embedded_graphics::pixelcolor::Rgb565;
+use embedded_graphics::prelude::*;
+use embedded_graphics::text::Text;
 use pybadge_high::{Color, PyBadge};
 
 pub struct Bridge {

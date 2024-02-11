@@ -1,19 +1,20 @@
 #![no_std]
 #![no_main]
 
+extern crate alloc;
+
 mod bridge;
 mod consts;
 mod framebuf;
 mod linking;
+
 use bridge::Bridge;
-extern crate alloc;
 use embedded_alloc::Heap;
-use embedded_graphics::{
-    mono_font::{ascii::FONT_6X10, MonoTextStyle},
-    pixelcolor::Rgb565,
-    prelude::*,
-    text::Text,
-};
+use embedded_graphics::mono_font::ascii::FONT_6X10;
+use embedded_graphics::mono_font::MonoTextStyle;
+use embedded_graphics::pixelcolor::Rgb565;
+use embedded_graphics::prelude::*;
+use embedded_graphics::text::Text;
 use framebuf::FrameBuf;
 use linking::link;
 use pybadge::prelude::entry;
