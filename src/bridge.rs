@@ -134,8 +134,19 @@ impl Bridge {
         rect.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
-    pub fn wasm4_text(&mut self, data: &mut [u8], text: i32, x: i32, y: i32) {
-        // ...
+    pub fn wasm4_text(&mut self, data: &mut [u8], text_ptr: i32, x: i32, y: i32) {
+        // We need unsafe because we want to use data later as mutable as well
+        // to actually draw the text onto the frame buffer.
+        // It is safe to do so because the ranges don't intersect.
+
+        // TODO: Specify the correct end range!
+        let str_data: &[u8] = unsafe {
+            let start_ptr = data.as_ptr().add(text_ptr as usize);
+            core::slice::from_raw_parts(start_ptr, 1024)
+        };
+        let c_str = core::ffi::CStr::from_bytes_until_nul(str_data).unwrap();
+        let str = c_str.to_str().unwrap();
+        self.write_text(data, str, x, y)
     }
 
     pub fn wasm4_text_utf8(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {
@@ -144,6 +155,17 @@ impl Bridge {
 
     pub fn wasm4_text_utf16(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {
         // ...
+    }
+
+    pub fn write_text(&mut self, data: &mut [u8], text: &str, x: i32, y: i32) {
+        let Some(color) = get_draw_color(data, 1) else {
+            return;
+        };
+        let style = MonoTextStyle::new(&FONT_6X10, color);
+        let position = Point::new(x, y);
+        let text = Text::new(text, position, style);
+        let mut frame_buf = FrameBuf::from_memory(data);
+        text.draw(&mut frame_buf).unwrap();
     }
 
     pub fn wasm4_tone(
@@ -209,8 +231,9 @@ fn get_draw_color(data: &mut [u8], idx: u8) -> Option<Color4> {
         4 => data[DRAW_COLORS] >> 4 & 0xf0,
         _ => unreachable!("bad draw color index: {}", idx),
     };
-    if color == 0 {
-        return None;
-    }
-    Some(Color4(color))
+    // if color == 0 {
+    //     return None;
+    // }
+    // Some(Color4(color - 1))
+    Some(Color4(1))
 }
