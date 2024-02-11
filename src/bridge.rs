@@ -7,7 +7,7 @@ use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::raw::RawU2;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::*;
-use embedded_graphics::primitives::{Line, PrimitiveStyle, StyledDrawable};
+use embedded_graphics::primitives::{Ellipse, Line, PrimitiveStyle, Rectangle, StyledDrawable};
 use embedded_graphics::text::Text;
 use pybadge_high::{Color, PyBadge};
 
@@ -112,18 +112,26 @@ impl Bridge {
 
     pub fn wasm4_line(&mut self, data: &mut [u8], x1: i32, y1: i32, x2: i32, y2: i32) {
         let line = Line::new(Point::new(x1, y1), Point::new(x2, y2));
-        let mut frame_buf = FrameBuf::from_memory(data);
-        let color = Color4(2);
+        let Some(color) = get_draw_color(data, 1) else {
+            return;
+        };
         let style = PrimitiveStyle::with_stroke(color, 1);
+        let mut frame_buf = FrameBuf::from_memory(data);
         line.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
     pub fn wasm4_oval(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
-        // ...
+        let ellipse = Ellipse::new(Point::new(x, y), Size::new(width, height));
+        let style = get_shape_style(data);
+        let mut frame_buf = FrameBuf::from_memory(data);
+        ellipse.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
     pub fn wasm4_rect(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
-        // ...
+        let rect = Rectangle::new(Point::new(x, y), Size::new(width, height));
+        let style = get_shape_style(data);
+        let mut frame_buf = FrameBuf::from_memory(data);
+        rect.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
     pub fn wasm4_text(&mut self, data: &mut [u8], text: i32, x: i32, y: i32) {
@@ -182,4 +190,27 @@ fn write16le(target: &mut [u8], val: u16) {
     let val = val.to_le();
     target[1] = (val & 0x00ff) as u8;
     target[0] = ((val & 0xff00) >> 8) as u8;
+}
+
+fn get_shape_style(data: &mut [u8]) -> PrimitiveStyle<Color4> {
+    let mut style = PrimitiveStyle::new();
+    if let Some(color) = get_draw_color(data, 1) {
+        style.stroke_width = 1;
+        style.stroke_color = Some(color);
+    };
+    style.fill_color = get_draw_color(data, 2);
+    style
+}
+fn get_draw_color(data: &mut [u8], idx: u8) -> Option<Color4> {
+    let color = match idx {
+        1 => data[DRAW_COLORS + 1] & 0x0f,
+        2 => data[DRAW_COLORS + 1] >> 4 & 0xf0,
+        3 => data[DRAW_COLORS] & 0x0f,
+        4 => data[DRAW_COLORS] >> 4 & 0xf0,
+        _ => unreachable!("bad draw color index: {}", idx),
+    };
+    if color == 0 {
+        return None;
+    }
+    Some(Color4(color))
 }
