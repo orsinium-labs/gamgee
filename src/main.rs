@@ -49,18 +49,17 @@ fn main() -> ! {
 
     let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();
     let mem = wasmi::Memory::new(&mut store, mem_type).unwrap();
+    let memory = mem;
     linker.define("env", "memory", mem).unwrap();
 
     let instance_pre = linker.instantiate(&mut store, &module).unwrap();
     let instance = instance_pre.start(&mut store).unwrap();
     // store.data_mut().set_memory(memory, &mut store);
 
-    let memory = match linker.get(&mut store, "env", "memory") {
-        Some(wasmi::Extern::Memory(memory)) => memory,
-        _ => panic!("memory not found"),
-    };
-    let (data, bridge) = memory.data_and_store_mut(&mut store);
-    bridge.init(data);
+    {
+        let (data, bridge) = memory.data_and_store_mut(&mut store);
+        bridge.init(memory, data);
+    }
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
         start.call(&mut store, ()).unwrap();
     }
@@ -68,12 +67,7 @@ fn main() -> ! {
     let update = instance.get_typed_func::<(), ()>(&store, "update").unwrap();
     loop {
         update.call(&mut store, ()).unwrap();
-        let memory = match linker.get(&mut store, "env", "memory") {
-            Some(wasmi::Extern::Memory(memory)) => memory,
-            _ => panic!("memory not found"),
-        };
         let (data, bridge) = memory.data_and_store_mut(&mut store);
-        let frame_buf = FrameBuf::from_memory(data);
-        bridge.update(frame_buf);
+        bridge.update(data);
     }
 }

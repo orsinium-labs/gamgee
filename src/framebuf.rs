@@ -1,7 +1,7 @@
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
 use embedded_graphics::pixelcolor::raw::{RawData, RawU2};
-use embedded_graphics::pixelcolor::{Bgr888, PixelColor, Rgb565};
+use embedded_graphics::pixelcolor::{Bgr888, PixelColor, Rgb565, RgbColor};
 use embedded_graphics::prelude::{Pixel, Size};
 
 /// Represents one of four colors in the palette with a 0-3 number, taking 2 bits.
@@ -54,11 +54,10 @@ impl<'a> FrameBuf<'a> {
     fn get_color(&self, color_id: u8) -> Rgb565 {
         let start = (color_id * 4) as usize;
         let raw_color = &self.palette_raw[start..(start + 4)];
-        let r = raw_color[1];
-        let g = raw_color[2];
-        let b = raw_color[3];
-        let color = Bgr888::new(r, g, b);
-        color.into()
+        let r = (raw_color[3] as f64 * 32. / 256.) as u8;
+        let g = (raw_color[2] as f64 * 64. / 256.) as u8;
+        let b = (raw_color[1] as f64 * 32. / 256.) as u8;
+        Rgb565::new(r, g, b)
     }
 
     fn set_pixel(&mut self, pixel: Pixel<Color4>) -> Result<(), ()> {
@@ -108,7 +107,7 @@ impl<'a> DrawTarget for FrameBuf<'a> {
     }
 }
 
-struct PixelIterator<'a> {
+pub struct PixelIterator<'a> {
     buf: &'a FrameBuf<'a>,
 
     // The next color offset.

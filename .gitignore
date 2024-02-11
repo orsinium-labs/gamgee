@@ -2,8 +2,5 @@
 *.wasm
 /*.elf
 /.task/
-
-
-# Added by cargo
-
-/target
+/target/
+/drafts/
