@@ -30,10 +30,17 @@ impl Bridge {
     pub fn init(&mut self, memory: wasmi::Memory, data: &mut [u8]) {
         self.memory = Some(memory);
         // init the palette
-        write32le(&mut data[PALETTE..], 0xe0f8cf);
+        write32le(&mut data[PALETTE..], 0xe0f8cf); // light
         write32le(&mut data[PALETTE + 4..], 0x86c06c);
         write32le(&mut data[PALETTE + 8..], 0x306850);
-        write32le(&mut data[PALETTE + 12..], 0x071821);
+        write32le(&mut data[PALETTE + 12..], 0x071821); // dark
+
+        // https://lospec.com/palette-list/ice-cream-gb
+        // write32le(&mut data[PALETTE..], 0xfff6d3); // light
+        // write32le(&mut data[PALETTE + 4..], 0xf9a875);
+        // write32le(&mut data[PALETTE + 8..], 0xeb6b6f);
+        // write32le(&mut data[PALETTE + 12..], 0x7c3f58); // dark
+
         // let frame_buf = FrameBuf::from_memory(data);
     }
 
@@ -156,8 +163,8 @@ impl Bridge {
 
 fn write32le(target: &mut [u8], val: u32) {
     let val = val.to_le();
-    target[0] = (val & 0x0000_00ff) as u8;
-    target[1] = (val & 0x0000_ff00) as u8;
-    target[2] = (val & 0x00ff_0000) as u8;
-    target[3] = (val & 0xff00_0000) as u8;
+    target[3] = (val & 0x0000_00ff) as u8;
+    target[2] = ((val & 0x0000_ff00) >> 8) as u8;
+    target[1] = ((val & 0x00ff_0000) >> 16) as u8;
+    target[0] = ((val & 0xff00_0000) >> 24) as u8;
 }
