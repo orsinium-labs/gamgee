@@ -87,7 +87,7 @@ impl<'a> FrameBuf<'a> {
 impl<'a> OriginDimensions for FrameBuf<'a> {
     fn size(&self) -> Size {
         Size {
-            width: 160,
+            width:  160,
             height: 160,
         }
     }
