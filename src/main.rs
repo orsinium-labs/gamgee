@@ -15,7 +15,6 @@ use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::*;
 use embedded_graphics::text::Text;
-use framebuf::FrameBuf;
 use linking::link;
 use pybadge::prelude::entry;
 use pybadge::{Color, PyBadge};
@@ -45,12 +44,12 @@ fn main() -> ! {
     let bridge = Bridge::new(pybadge);
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
     let mut linker = <wasmi::Linker<Bridge>>::new(&engine);
-    link(&mut linker).unwrap();
 
     let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();
     let mem = wasmi::Memory::new(&mut store, mem_type).unwrap();
     let memory = mem;
     linker.define("env", "memory", mem).unwrap();
+    link(&mut linker, memory).unwrap();
 
     let instance_pre = linker.instantiate(&mut store, &module).unwrap();
     let instance = instance_pre.start(&mut store).unwrap();

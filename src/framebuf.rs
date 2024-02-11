@@ -7,7 +7,7 @@ use embedded_graphics::prelude::{Pixel, Size};
 
 /// Represents one of four colors in the palette with a 0-3 number, taking 2 bits.
 #[derive(PartialEq, Copy, Clone)]
-pub struct Color4(RawU2);
+pub struct Color4(pub RawU2);
 
 impl Color4 {
     fn as_byte(&self) -> u8 {

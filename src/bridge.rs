@@ -1,11 +1,13 @@
 use crate::consts::*;
-use crate::framebuf::FrameBuf;
+use crate::framebuf::{Color4, FrameBuf};
 use alloc::string::ToString;
 use embedded_graphics::geometry::Point;
 use embedded_graphics::mono_font::ascii::FONT_6X10;
 use embedded_graphics::mono_font::MonoTextStyle;
+use embedded_graphics::pixelcolor::raw::RawU2;
 use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::*;
+use embedded_graphics::primitives::{Line, PrimitiveStyle, StyledDrawable};
 use embedded_graphics::text::Text;
 use pybadge_high::{Color, PyBadge};
 
@@ -95,8 +97,12 @@ impl Bridge {
         // ...
     }
 
-    pub fn wasm4_hline(&mut self, frame_buf: FrameBuf, x: i32, y: i32, len: u32) {
-        // ...
+    pub fn wasm4_hline(&mut self, data: &mut [u8], x: i32, y: i32, len: i32) {
+        let line = Line::new(Point { x, y }, Point { x: x + len, y });
+        let mut frame_buf = FrameBuf::from_memory(data);
+        let color = Color4(RawU2::from_u32(2));
+        let style = PrimitiveStyle::with_stroke(color, 1);
+        line.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
     pub fn wasm4_vline(&mut self, x: i32, y: i32, len: u32) {

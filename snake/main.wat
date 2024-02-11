@@ -132,6 +132,7 @@
 
   ;; text("Hello from Wat!", 10, 10);
   (call $text (i32.const 0x19a8) (i32.const 10) (i32.const 10))
+  (call $hline (i32.const 10) (i32.const 20) (i32.const 30))
 
   ;; uint8_t gamepad = *GAMEPAD1;
   (local.set $gamepad (i32.load8_u (global.get $GAMEPAD1)))

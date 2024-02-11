@@ -1,10 +1,12 @@
 use crate::bridge::Bridge;
 extern crate alloc;
-use crate::framebuf::FrameBuf;
 
 type C<'a> = wasmi::Caller<'a, Bridge>;
 
-pub fn link(linker: &mut wasmi::Linker<Bridge>) -> Result<(), wasmi::errors::LinkerError> {
+pub fn link(
+    linker: &mut wasmi::Linker<Bridge>,
+    memory: wasmi::Memory,
+) -> Result<(), wasmi::errors::LinkerError> {
     linker.func_wrap("pybadge", "echo_i32", |mut caller: C, param: i32| {
         caller.data_mut().echo_i32(param)
     })?;
@@ -42,15 +44,14 @@ pub fn link(linker: &mut wasmi::Linker<Bridge>) -> Result<(), wasmi::errors::Lin
             caller.data_mut().wasm4_line(x1, y1, x2, y2)
         },
     )?;
-    linker.func_wrap("env", "hline", |mut caller: C, x: i32, y: i32, len: u32| {
-        let mem = match caller.get_export("memory") {
-            Some(wasmi::Extern::Memory(mem)) => mem,
-            _ => panic!("memory not found"),
-        };
-        let (data, bridge) = mem.data_and_store_mut(&mut caller);
-        let frame_buf = FrameBuf::from_memory(data);
-        bridge.wasm4_hline(frame_buf, x, y, len)
-    })?;
+    linker.func_wrap(
+        "env",
+        "hline",
+        move |mut caller: C, x: i32, y: i32, len: i32| {
+            let (data, bridge) = memory.data_and_store_mut(&mut caller);
+            bridge.wasm4_hline(data, x, y, len)
+        },
+    )?;
     linker.func_wrap("env", "vline", |mut caller: C, x: i32, y: i32, len: u32| {
         caller.data_mut().wasm4_vline(x, y, len)
     })?;
