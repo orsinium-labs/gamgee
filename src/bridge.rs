@@ -1,18 +1,14 @@
 use crate::consts::*;
 use crate::framebuf::{Color4, FrameBuf};
-use alloc::string::ToString;
 use embedded_graphics::geometry::Point;
 use embedded_graphics::mono_font::ascii::FONT_6X10;
 use embedded_graphics::mono_font::MonoTextStyle;
-use embedded_graphics::pixelcolor::raw::RawU2;
-use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::*;
 use embedded_graphics::primitives::{Ellipse, Line, PrimitiveStyle, Rectangle, StyledDrawable};
 use embedded_graphics::text::Text;
-use pybadge_high::{Color, PyBadge};
+use pybadge_high::PyBadge;
 
 pub struct Bridge {
-    command: i32,
     pybadge: PyBadge,
     memory:  Option<wasmi::Memory>,
 }
@@ -20,7 +16,6 @@ pub struct Bridge {
 impl Bridge {
     pub fn new(pybadge: PyBadge) -> Self {
         Self {
-            command: 0,
             memory: None,
             pybadge,
         }
@@ -30,18 +25,27 @@ impl Bridge {
     pub fn init(&mut self, memory: wasmi::Memory, data: &mut [u8]) {
         self.memory = Some(memory);
         // init the color palette
-        write32le(&mut data[PALETTE..], 0xe0f8cf); // light
-        write32le(&mut data[PALETTE + 4..], 0x86c06c);
-        write32le(&mut data[PALETTE + 8..], 0x306850);
-        write32le(&mut data[PALETTE + 12..], 0x071821); // dark
-        write16le(&mut data[DRAW_COLORS..], 0x0312);
-        write32le(&mut data[MOUSE_X..], 0x7fff_7fff);
+
+        // ugly colors for better debugging
+        write32le(&mut data[PALETTE..], 0xffffff);
+        write32le(&mut data[PALETTE + 4..], 0x0000ff);
+        write32le(&mut data[PALETTE + 8..], 0xff0000);
+        write32le(&mut data[PALETTE + 12..], 0x00ff00);
+
+        // The original default palette
+        // write32le(&mut data[PALETTE..], 0xe0f8cf);
+        // write32le(&mut data[PALETTE + 4..], 0x86c06c);
+        // write32le(&mut data[PALETTE + 8..], 0x306850);
+        // write32le(&mut data[PALETTE + 12..], 0x071821);
 
         // https://lospec.com/palette-list/ice-cream-gb
-        // write32le(&mut data[PALETTE..], 0xfff6d3); // light
+        // write32le(&mut data[PALETTE..], 0xfff6d3);
         // write32le(&mut data[PALETTE + 4..], 0xf9a875);
         // write32le(&mut data[PALETTE + 8..], 0xeb6b6f);
-        // write32le(&mut data[PALETTE + 12..], 0x7c3f58); // dark
+        // write32le(&mut data[PALETTE + 12..], 0x7c3f58);
+
+        write16le(&mut data[DRAW_COLORS..], 0x0312);
+        write32le(&mut data[MOUSE_X..], 0x7fff_7fff);
 
         // let frame_buf = FrameBuf::from_memory(data);
     }
@@ -69,10 +73,6 @@ impl Bridge {
         for addr in 0x00a0..0x19a0 {
             data[addr] = 0;
         }
-    }
-
-    pub fn echo_i32(&mut self, param: i32) {
-        self.command = param
     }
 
     pub fn wasm4_blit(
