@@ -44,7 +44,7 @@ fn main() -> ! {
     let bridge = Bridge::new(pybadge);
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
     let mut linker = <wasmi::Linker<Bridge>>::new(&engine);
-    link(&mut linker, &mut store);
+    link(&mut linker).unwrap();
 
     let mem_type = wasmi::MemoryType::new(1, Some(1)).unwrap();
     let mem = wasmi::Memory::new(&mut store, mem_type).unwrap();
