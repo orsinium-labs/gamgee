@@ -131,17 +131,38 @@ impl Bridge {
     pub fn wasm4_blit_sub(
         &self,
         data: &mut [u8],
-        sprite_ptr: i32,
+        sprite_ptr: u32,
         x: i32,
         y: i32,
-        width: u32,
-        height: u32,
-        src_x: u32,
-        src_y: u32,
+        width: i32,
+        height: i32,
+        src_x: i32,
+        src_y: i32,
         stride: i32,
         flags: u32,
     ) {
-        // ...
+        let memory = Memory::from_bytes(data);
+        let size = (width * height) as u32 / 4;
+        let sprite = get_user_data(memory.user_data, sprite_ptr, size);
+        let mut frame_buf = FrameBuf {
+            palette_raw: memory.palette,
+            frame_buf:   memory.frame_buf,
+        };
+        frame_buf.blit(
+            memory.draw_colors,
+            sprite,
+            x,
+            y,
+            width,
+            height,
+            src_x,
+            src_y,
+            stride,
+            flags & BLIT_2BPP != 0,
+            flags & BLIT_FLIP_X != 0,
+            flags & BLIT_FLIP_Y != 0,
+            flags & BLIT_ROTATE != 0,
+        )
     }
 
     pub fn wasm4_hline(&mut self, data: &mut [u8], x: i32, y: i32, len: i32) {

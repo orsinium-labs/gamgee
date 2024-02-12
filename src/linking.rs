@@ -25,13 +25,13 @@ pub fn link(
         "env",
         "blitSub",
         move |mut caller: C,
-              sprite_ptr: i32,
+              sprite_ptr: u32,
               x: i32,
               y: i32,
-              width: u32,
-              height: u32,
-              src_x: u32,
-              src_y: u32,
+              width: i32,
+              height: i32,
+              src_x: i32,
+              src_y: i32,
               stride: i32,
               flags: u32| {
             let (data, bridge) = memory.data_and_store_mut(&mut caller);
