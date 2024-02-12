@@ -120,7 +120,7 @@ impl Bridge {
             height,
             0,
             0,
-            0,
+            width,
             flags,
         )
     }
