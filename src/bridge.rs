@@ -54,7 +54,11 @@ impl Bridge {
     pub fn update(&mut self, data: &mut [u8]) {
         let mut memory = Memory::from_bytes(data);
         let frame_buf = FrameBuf::from_memory(&mut memory);
-        self.pybadge.display.draw_iter(frame_buf.iter()).unwrap();
+        let area = Rectangle::new(Point::new(0, 0), Size::new(160, 160));
+        self.pybadge
+            .display
+            .fill_contiguous(&area, frame_buf.iter())
+            .unwrap();
         self.clear_frame_buffer(data);
         self.update_gamepad(data);
     }
@@ -175,7 +179,7 @@ impl Bridge {
         };
         let style = PrimitiveStyle::with_stroke(color, 1);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
-        line.draw_styled(&style, &mut frame_buf).unwrap();
+        line.draw_styled(&style, &mut frame_buf);
     }
 
     pub fn wasm4_oval(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
@@ -183,7 +187,7 @@ impl Bridge {
         let mut memory = Memory::from_bytes(data);
         let style = get_shape_style(memory.draw_colors);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
-        ellipse.draw_styled(&style, &mut frame_buf).unwrap();
+        ellipse.draw_styled(&style, &mut frame_buf);
     }
 
     pub fn wasm4_rect(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
@@ -191,7 +195,7 @@ impl Bridge {
         let mut memory = Memory::from_bytes(data);
         let style = get_shape_style(memory.draw_colors);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
-        rect.draw_styled(&style, &mut frame_buf).unwrap();
+        rect.draw_styled(&style, &mut frame_buf);
     }
 
     pub fn wasm4_text(&mut self, data: &mut [u8], text_ptr: u32, x: i32, y: i32) {
@@ -209,7 +213,7 @@ impl Bridge {
             palette_raw: memory.palette,
             frame_buf:   memory.frame_buf,
         };
-        text.draw(&mut frame_buf).unwrap();
+        text.draw(&mut frame_buf);
     }
 
     pub fn wasm4_text_utf8(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {

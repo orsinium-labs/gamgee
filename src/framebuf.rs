@@ -51,7 +51,7 @@ impl<'a> FrameBuf<'a> {
         }
     }
 
-    fn get_color(&self, color_id: u8) -> Rgb565 {
+    pub fn get_color(&self, color_id: u8) -> Rgb565 {
         let start = (color_id * 4) as usize;
         let raw_color = &self.palette_raw[start..(start + 4)];
         let r = (raw_color[3] as f64 * 32. / 256.) as u8;
@@ -196,17 +196,10 @@ pub struct PixelIterator<'a> {
 }
 
 impl<'a> Iterator for PixelIterator<'a> {
-    type Item = Pixel<Rgb565>;
+    type Item = Rgb565;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let mut y = self.pos as i32 / 160;
-        let mut x = self.pos as i32 % 160;
-        if x >= 160 {
-            x = 0;
-            y += 1;
-        }
-        if y >= 160 {
-            assert_eq!(self.pos, 160 * 160);
+        if self.pos >= 160 * 160 {
             return None;
         }
         let byte = self.buf.frame_buf[self.pos / 4];
@@ -214,7 +207,6 @@ impl<'a> Iterator for PixelIterator<'a> {
         let color_id = (byte >> bit_offset) & 0b11;
         let color = self.palette[color_id as usize];
         self.pos += 1;
-        let point = Point { x, y };
-        Some(Pixel(point, color))
+        Some(color)
     }
 }
