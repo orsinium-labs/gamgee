@@ -196,11 +196,11 @@ impl Bridge {
         // ...
     }
 
-    pub fn wasm4_diskr(&mut self, data: &mut [u8], dest: i32, size: u32) -> i32 {
+    pub fn wasm4_diskr(&mut self, data: &mut [u8], dest: i32, size: u32) -> u32 {
         0
     }
 
-    pub fn wasm4_diskw(&mut self, data: &mut [u8], src: i32, size: u32) -> i32 {
+    pub fn wasm4_diskw(&mut self, data: &mut [u8], src: i32, size: u32) -> u32 {
         0
     }
 

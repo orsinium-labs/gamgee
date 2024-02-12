@@ -115,15 +115,19 @@ pub fn link(
     linker.func_wrap(
         "env",
         "diskr",
-        move |mut caller: C, dest: i32, size: u32| {
+        move |mut caller: C, dest: i32, size: u32| -> u32 {
             let (data, bridge) = memory.data_and_store_mut(&mut caller);
             bridge.wasm4_diskr(data, dest, size)
         },
     )?;
-    linker.func_wrap("env", "diskw", move |mut caller: C, src: i32, size: u32| {
-        let (data, bridge) = memory.data_and_store_mut(&mut caller);
-        bridge.wasm4_diskw(data, src, size)
-    })?;
+    linker.func_wrap(
+        "env",
+        "diskw",
+        move |mut caller: C, src: i32, size: u32| -> u32 {
+            let (data, bridge) = memory.data_and_store_mut(&mut caller);
+            bridge.wasm4_diskw(data, src, size)
+        },
+    )?;
     linker.func_wrap("env", "trace", move |mut caller: C, str: i32| {
         let (data, bridge) = memory.data_and_store_mut(&mut caller);
         bridge.wasm4_trace(data, str)

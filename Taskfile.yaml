@@ -4,9 +4,15 @@ version: "3"
 tasks:
   build-wasm:
     sources:
-      - demo.wat
+      - snake/main.wat
+    status:
+      - test -f snake.wasm
     cmds:
-      - wat2wasm demo.wat
+      - wat2wasm -o snake.wasm snake/main.wat
+      - >
+        wasm-opt
+        -Oz --zero-filled-memory --strip-producers
+        snake.wasm -o snake.wasm
   flash:
     desc: "Flash the demo to pybadge"
     cmds:

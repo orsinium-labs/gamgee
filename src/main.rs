@@ -39,7 +39,7 @@ fn main() -> ! {
         .draw(&mut pybadge.display)
         .unwrap();
     let engine = wasmi::Engine::default();
-    let bytes = include_bytes!("../snake/build/cart.wasm");
+    let bytes = include_bytes!("../snake.wasm");
     let module = wasmi::Module::new(&engine, &bytes[..]).unwrap();
     let bridge = Bridge::new(pybadge);
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
