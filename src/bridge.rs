@@ -121,10 +121,7 @@ impl Bridge {
             0,
             0,
             0,
-            flags & BLIT_2BPP != 0,
-            flags & BLIT_FLIP_X != 0,
-            flags & BLIT_FLIP_Y != 0,
-            flags & BLIT_ROTATE != 0,
+            flags,
         )
     }
 
@@ -158,10 +155,7 @@ impl Bridge {
             src_x,
             src_y,
             stride,
-            flags & BLIT_2BPP != 0,
-            flags & BLIT_FLIP_X != 0,
-            flags & BLIT_FLIP_Y != 0,
-            flags & BLIT_ROTATE != 0,
+            flags,
         )
     }
 

@@ -1,3 +1,4 @@
+use crate::consts::*;
 use crate::memory::Memory;
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
@@ -88,11 +89,13 @@ impl<'a> FrameBuf<'a> {
         src_x: i32,
         src_y: i32,
         src_stride: i32,
-        bpp2: bool,
-        mut flip_x: bool,
-        flip_y: bool,
-        rotate: bool,
+        flags: u32,
     ) {
+        let bpp2 = flags & BLIT_2BPP != 0;
+        let mut flip_x = flags & BLIT_FLIP_X != 0;
+        let flip_y = flags & BLIT_FLIP_Y != 0;
+        let rotate = flags & BLIT_ROTATE != 0;
+
         let colors = draw_colors[0] as u16 | ((draw_colors[1] as u16) << 8);
 
         // Clip rectangle to screen
