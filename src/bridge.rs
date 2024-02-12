@@ -52,14 +52,6 @@ impl Bridge {
 
     pub fn update(&mut self, data: &mut [u8]) {
         let frame_buf = FrameBuf::from_memory(data);
-        // let style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
-        // self.pybadge.display.clear(Color::BLUE).unwrap();
-        // let text = self.command.to_string();
-        // let pos = Point::new(20, 30);
-        // Text::new(&text, pos, style)
-        //     .draw(&mut self.pybadge.display)
-        //     .unwrap();
-        // self.pybadge.display.write_pixels(frame_buf.iter());
         self.pybadge.display.draw_iter(frame_buf.iter()).unwrap();
         self.clear_frame_buffer(data);
         self.update_gamepad(data);
@@ -76,7 +68,8 @@ impl Bridge {
         }
     }
 
-    fn update_gamepad(&self, data: &mut [u8]) {
+    fn update_gamepad(&mut self, data: &mut [u8]) {
+        self.pybadge.buttons.update();
         // https://wasm4.org/docs/reference/memory#gamepads
         data[GAMEPAD1] = 0;
         if self.pybadge.buttons.a_pressed() {
@@ -256,7 +249,7 @@ fn get_draw_color(data: &mut [u8], idx: u8) -> Option<Color4> {
         4 => (data[DRAW_COLORS + 1] >> 4) & 0xf,
         _ => unreachable!("bad draw color index: {}", idx),
     };
-    assert!(color <= 4);
+    assert!(color <= 4, "draw color has too high palette index");
     if color == 0 {
         return None;
     }
