@@ -1,12 +1,13 @@
 #![no_std]
 #![no_main]
-
+#![allow(clippy::too_many_arguments)]
 extern crate alloc;
 
 mod bridge;
 mod consts;
 mod framebuf;
 mod linking;
+mod memory;
 
 use bridge::Bridge;
 use embedded_alloc::Heap;

@@ -11,7 +11,7 @@ pub fn link(
         "env",
         "blit",
         move |mut caller: C,
-              sprite_ptr: i32,
+              sprite_ptr: u32,
               x: i32,
               y: i32,
               width: i32,
@@ -83,7 +83,7 @@ pub fn link(
     linker.func_wrap(
         "env",
         "text",
-        move |mut caller: C, text: i32, x: i32, y: i32| {
+        move |mut caller: C, text: u32, x: i32, y: i32| {
             let (data, bridge) = memory.data_and_store_mut(&mut caller);
             bridge.wasm4_text(data, text, x, y)
         },

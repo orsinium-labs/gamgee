@@ -1,7 +1,7 @@
 use crate::consts::*;
 use crate::framebuf::{Color4, FrameBuf};
+use crate::memory::Memory;
 use embedded_graphics::geometry::Point;
-use embedded_graphics::image::ImageRawLE;
 use embedded_graphics::mono_font::ascii::FONT_6X10;
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::prelude::*;
@@ -52,7 +52,8 @@ impl Bridge {
     }
 
     pub fn update(&mut self, data: &mut [u8]) {
-        let frame_buf = FrameBuf::from_memory(data);
+        let mut memory = Memory::from_bytes(data);
+        let frame_buf = FrameBuf::from_memory(&mut memory);
         self.pybadge.display.draw_iter(frame_buf.iter()).unwrap();
         self.clear_frame_buffer(data);
         self.update_gamepad(data);
@@ -96,29 +97,22 @@ impl Bridge {
     pub fn wasm4_blit(
         &mut self,
         data: &mut [u8],
-        sprite_ptr: i32,
+        sprite_ptr: u32,
         x: i32,
         y: i32,
         width: i32,
         height: i32,
         flags: u32,
     ) {
-        let sprite_ptr = sprite_ptr as usize;
-        let size = (width * height) as usize;
-        let draw_colors = [data[DRAW_COLORS].clone(), data[DRAW_COLORS + 1].clone()];
-        // let sprite = &data[sprite_ptr..sprite_ptr + size];
-
-        let wasm4_data: &mut [u8];
-        let sprite: &[u8];
-        let ptr = data.as_mut_ptr();
-        unsafe {
-            wasm4_data = core::slice::from_raw_parts_mut(ptr, USER_DATA);
-            sprite = core::slice::from_raw_parts(ptr.add(sprite_ptr), size / 4);
-        }
-
-        let mut frame_buf = FrameBuf::from_memory(wasm4_data);
+        let memory = Memory::from_bytes(data);
+        let size = (width * height) as u32 / 4;
+        let sprite = get_user_data(memory.user_data, sprite_ptr, size);
+        let mut frame_buf = FrameBuf {
+            palette_raw: memory.palette,
+            frame_buf:   memory.frame_buf,
+        };
         frame_buf.blit(
-            &draw_colors,
+            memory.draw_colors,
             sprite,
             x,
             y,
@@ -160,41 +154,47 @@ impl Bridge {
 
     pub fn wasm4_line(&mut self, data: &mut [u8], x1: i32, y1: i32, x2: i32, y2: i32) {
         let line = Line::new(Point::new(x1, y1), Point::new(x2, y2));
-        let Some(color) = get_draw_color(data, 1) else {
+        let mut memory = Memory::from_bytes(data);
+        let Some(color) = get_draw_color(memory.draw_colors, 1) else {
             return;
         };
         let style = PrimitiveStyle::with_stroke(color, 1);
-        let mut frame_buf = FrameBuf::from_memory(data);
+        let mut frame_buf = FrameBuf::from_memory(&mut memory);
         line.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
     pub fn wasm4_oval(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
         let ellipse = Ellipse::new(Point::new(x, y), Size::new(width, height));
-        let style = get_shape_style(data);
-        let mut frame_buf = FrameBuf::from_memory(data);
+        let mut memory = Memory::from_bytes(data);
+        let style = get_shape_style(memory.draw_colors);
+        let mut frame_buf = FrameBuf::from_memory(&mut memory);
         ellipse.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
     pub fn wasm4_rect(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
         let rect = Rectangle::new(Point::new(x, y), Size::new(width, height));
-        let style = get_shape_style(data);
-        let mut frame_buf = FrameBuf::from_memory(data);
+        let mut memory = Memory::from_bytes(data);
+        let style = get_shape_style(memory.draw_colors);
+        let mut frame_buf = FrameBuf::from_memory(&mut memory);
         rect.draw_styled(&style, &mut frame_buf).unwrap();
     }
 
-    pub fn wasm4_text(&mut self, data: &mut [u8], text_ptr: i32, x: i32, y: i32) {
-        // We need unsafe because we want to use data later as mutable as well
-        // to actually draw the text onto the frame buffer.
-        // It is safe to do so because the ranges don't intersect.
-
-        // TODO: Specify the correct end range!
-        let str_data: &[u8] = unsafe {
-            let start_ptr = data.as_ptr().add(text_ptr as usize);
-            core::slice::from_raw_parts(start_ptr, 1024)
-        };
+    pub fn wasm4_text(&mut self, data: &mut [u8], text_ptr: u32, x: i32, y: i32) {
+        let memory = Memory::from_bytes(data);
+        let str_data: &[u8] = get_user_data(memory.user_data, text_ptr, 1024);
         let c_str = core::ffi::CStr::from_bytes_until_nul(str_data).unwrap();
         let str = c_str.to_str().unwrap();
-        self.write_text(data, str, x, y)
+        let Some(color) = get_draw_color(memory.draw_colors, 1) else {
+            return;
+        };
+        let style = MonoTextStyle::new(&FONT_6X10, color);
+        let position = Point::new(x, y);
+        let text = Text::new(str, position, style);
+        let mut frame_buf = FrameBuf {
+            palette_raw: memory.palette,
+            frame_buf:   memory.frame_buf,
+        };
+        text.draw(&mut frame_buf).unwrap();
     }
 
     pub fn wasm4_text_utf8(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {
@@ -203,17 +203,6 @@ impl Bridge {
 
     pub fn wasm4_text_utf16(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {
         // ...
-    }
-
-    pub fn write_text(&mut self, data: &mut [u8], text: &str, x: i32, y: i32) {
-        let Some(color) = get_draw_color(data, 1) else {
-            return;
-        };
-        let style = MonoTextStyle::new(&FONT_6X10, color);
-        let position = Point::new(x, y);
-        let text = Text::new(text, position, style);
-        let mut frame_buf = FrameBuf::from_memory(data);
-        text.draw(&mut frame_buf).unwrap();
     }
 
     pub fn wasm4_tone(
@@ -248,6 +237,9 @@ impl Bridge {
     }
 }
 
+/// Write the given 32 bits at the beginning of the byte slice.
+///
+/// Uses little-endian encoding because wasm memory is little-endian.
 fn write32le(target: &mut [u8], val: u32) {
     let val = val.to_le();
     target[3] = (val & 0x0000_00ff) as u8;
@@ -256,28 +248,33 @@ fn write32le(target: &mut [u8], val: u32) {
     target[0] = ((val & 0xff00_0000) >> 24) as u8;
 }
 
+/// Write the given 16 bits at the beginning of the byte slice.
+///
+/// Uses little-endian encoding because wasm memory is little-endian.
 fn write16le(target: &mut [u8], val: u16) {
     let val = val.to_le();
     target[1] = (val & 0x00ff) as u8;
     target[0] = ((val & 0xff00) >> 8) as u8;
 }
 
-fn get_shape_style(data: &mut [u8]) -> PrimitiveStyle<Color4> {
+/// Make style for drawing primitives, use draw color 1 for stroke and color 2 for fill.
+fn get_shape_style(draw_colors: &[u8]) -> PrimitiveStyle<Color4> {
     let mut style = PrimitiveStyle::new();
-    if let Some(color) = get_draw_color(data, 1) {
+    if let Some(color) = get_draw_color(draw_colors, 1) {
         style.stroke_width = 1;
         style.stroke_color = Some(color);
     };
-    style.fill_color = get_draw_color(data, 2);
+    style.fill_color = get_draw_color(draw_colors, 2);
     style
 }
 
-fn get_draw_color(data: &mut [u8], idx: u8) -> Option<Color4> {
+/// Given draw colors and draw color index, get the palette color.
+fn get_draw_color(draw_colors: &[u8], idx: u8) -> Option<Color4> {
     let color = match idx {
-        1 => data[DRAW_COLORS] & 0xf,
-        2 => (data[DRAW_COLORS] >> 4) & 0xf,
-        3 => data[DRAW_COLORS + 1] & 0xf,
-        4 => (data[DRAW_COLORS + 1] >> 4) & 0xf,
+        1 => draw_colors[0] & 0xf,
+        2 => (draw_colors[0] >> 4) & 0xf,
+        3 => draw_colors[1] & 0xf,
+        4 => (draw_colors[1] >> 4) & 0xf,
         _ => unreachable!("bad draw color index: {}", idx),
     };
     assert!(color <= 4, "draw color has too high palette index");
@@ -285,4 +282,15 @@ fn get_draw_color(data: &mut [u8], idx: u8) -> Option<Color4> {
         return None;
     }
     Some(Color4(color - 1))
+}
+
+/// Safely read bytes from the user space of the wasm memory.
+pub fn get_user_data(user_data: &[u8], ptr: u32, len: u32) -> &[u8] {
+    let ptr = ptr as usize;
+    if ptr < USER_DATA {
+        return &[];
+    }
+    let start = ptr - USER_DATA;
+    let end = usize::min(user_data.len(), start + len as usize);
+    &user_data[start..end]
 }

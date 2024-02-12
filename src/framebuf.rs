@@ -1,4 +1,4 @@
-use crate::consts::*;
+use crate::memory::Memory;
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
 use embedded_graphics::pixelcolor::raw::{RawData, RawU2};
@@ -36,25 +36,17 @@ impl From<RawU2> for Color4 {
 
 pub struct FrameBuf<'a> {
     // https://wasm4.org/docs/reference/memory/#palette
-    palette_raw: &'a [u8],
+    pub palette_raw: &'a [u8],
 
     // https://wasm4.org/docs/reference/memory/#framebuffer
-    data: &'a mut [u8],
+    pub frame_buf: &'a mut [u8],
 }
 
 impl<'a> FrameBuf<'a> {
-    pub fn from_memory(data: &'a mut [u8]) -> FrameBuf<'a> {
-        // https://doc.rust-lang.org/nomicon/borrow-splitting.html
-        let ptr = data.as_mut_ptr();
-        let palette_raw: &'a [u8];
-        let frame_buffer: &'a mut [u8];
-        unsafe {
-            palette_raw = core::slice::from_raw_parts(ptr.add(PALETTE), 16);
-            frame_buffer = core::slice::from_raw_parts_mut(ptr.add(FRAMEBUFFER), 160 * 160 / 4);
-        }
-        FrameBuf {
-            palette_raw,
-            data: frame_buffer,
+    pub fn from_memory(memory: &'a mut Memory) -> FrameBuf<'a> {
+        Self {
+            palette_raw: memory.palette,
+            frame_buf:   memory.frame_buf,
         }
     }
 
@@ -79,9 +71,9 @@ impl<'a> FrameBuf<'a> {
         let byte_offset = pixel_offset / 4;
         let shift = (x as u8 & 0b11) << 1;
         let mask = 0b11 << shift;
-        let byte = self.data[byte_offset];
+        let byte = self.frame_buf[byte_offset];
         let color: u8 = draw_color.as_byte();
-        self.data[byte_offset] = (color << shift) | (byte & !mask);
+        self.frame_buf[byte_offset] = (color << shift) | (byte & !mask);
         Ok(())
     }
 
@@ -214,7 +206,7 @@ impl<'a> Iterator for PixelIterator<'a> {
             assert_eq!(self.pos, 160 * 160);
             return None;
         }
-        let byte = self.buf.data[self.pos / 4];
+        let byte = self.buf.frame_buf[self.pos / 4];
         let bit_offset = self.pos % 4 * 2;
         let color_id = (byte >> bit_offset) & 0b11;
         let color = self.palette[color_id as usize];
