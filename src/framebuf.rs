@@ -1,7 +1,7 @@
 use crate::consts::*;
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
-use embedded_graphics::pixelcolor::raw::RawU2;
+use embedded_graphics::pixelcolor::raw::{RawData, RawU2};
 use embedded_graphics::pixelcolor::{PixelColor, Rgb565};
 use embedded_graphics::prelude::{Pixel, Size};
 
@@ -26,6 +26,12 @@ impl Color4 {
 
 impl PixelColor for Color4 {
     type Raw = RawU2;
+}
+
+impl From<RawU2> for Color4 {
+    fn from(value: RawU2) -> Self {
+        Self(value.into_inner())
+    }
 }
 
 pub struct FrameBuf<'a> {
@@ -77,6 +83,77 @@ impl<'a> FrameBuf<'a> {
         let color: u8 = draw_color.as_byte();
         self.data[byte_offset] = (color << shift) | (byte & !mask);
         Ok(())
+    }
+
+    pub fn blit(
+        &mut self,
+        draw_colors: &[u8],
+        sprite: &[u8],
+        dst_x: i32,
+        dst_y: i32,
+        width: i32,
+        height: i32,
+        src_x: i32,
+        src_y: i32,
+        src_stride: i32,
+        bpp2: bool,
+        mut flip_x: bool,
+        flip_y: bool,
+        rotate: bool,
+    ) {
+        let colors = draw_colors[0] as u16 | ((draw_colors[1] as u16) << 8);
+
+        // Clip rectangle to screen
+        let clip_x_min: i32;
+        let clip_y_min: i32;
+        let clip_x_max: i32;
+        let clip_y_max: i32;
+        if rotate {
+            flip_x = !flip_x;
+            clip_x_min = i32::max(0, dst_y) - dst_y;
+            clip_y_min = i32::max(0, dst_x) - dst_x;
+            clip_x_max = i32::min(width, 160 - dst_y);
+            clip_y_max = i32::min(height, 160 - dst_x);
+        } else {
+            clip_x_min = i32::max(0, dst_x) - dst_x;
+            clip_y_min = i32::max(0, dst_y) - dst_y;
+            clip_x_max = i32::min(width, 160 - dst_x);
+            clip_y_max = i32::min(height, 160 - dst_y);
+        }
+
+        // Iterate pixels in rectangle
+        for y in clip_y_min..clip_y_max {
+            for x in clip_x_min..clip_x_max {
+                // Calculate sprite target coords
+                let tx = dst_x + if rotate { y } else { x };
+                let ty = dst_y + if rotate { x } else { y };
+
+                // Calculate sprite source coords
+                let sx = src_x + if flip_x { width - x - 1 } else { x };
+                let sy = src_y + if flip_y { height - y - 1 } else { y };
+
+                // Sample the sprite to get a color index
+                let bit_idx = sy * src_stride + sx;
+                let color_idx = if bpp2 {
+                    let byte = sprite[(bit_idx >> 2) as usize];
+                    let shift = 6 - ((bit_idx & 0x03) << 1);
+                    (byte >> shift) & 0x3
+                } else {
+                    let byte = sprite[(bit_idx >> 3) as usize];
+                    let shift = 7 - (bit_idx & 0x07);
+                    (byte >> shift) & 0x1
+                };
+
+                // Get the final color using the drawColors indirection
+                let dc = (colors >> (color_idx << 2)) & 0x0f;
+                if dc != 0 {
+                    let color = Color4(((dc - 1) & 0x03) as u8);
+                    let point = Point::new(tx, ty);
+                    let pixel = Pixel(point, color);
+                    self.set_pixel(pixel).unwrap();
+                }
+            }
+        }
     }
 
     pub fn iter(&'a self) -> PixelIterator<'a> {

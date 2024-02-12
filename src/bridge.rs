@@ -1,6 +1,7 @@
 use crate::consts::*;
 use crate::framebuf::{Color4, FrameBuf};
 use embedded_graphics::geometry::Point;
+use embedded_graphics::image::ImageRawLE;
 use embedded_graphics::mono_font::ascii::FONT_6X10;
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::prelude::*;
@@ -94,18 +95,48 @@ impl Bridge {
 
     pub fn wasm4_blit(
         &mut self,
+        data: &mut [u8],
         sprite_ptr: i32,
         x: i32,
         y: i32,
-        width: u32,
-        height: u32,
+        width: i32,
+        height: i32,
         flags: u32,
     ) {
-        // ...
+        let sprite_ptr = sprite_ptr as usize;
+        let size = (width * height) as usize;
+        let draw_colors = [data[DRAW_COLORS].clone(), data[DRAW_COLORS + 1].clone()];
+        // let sprite = &data[sprite_ptr..sprite_ptr + size];
+
+        let wasm4_data: &mut [u8];
+        let sprite: &[u8];
+        let ptr = data.as_mut_ptr();
+        unsafe {
+            wasm4_data = core::slice::from_raw_parts_mut(ptr, USER_DATA);
+            sprite = core::slice::from_raw_parts(ptr.add(sprite_ptr), size / 4);
+        }
+
+        let mut frame_buf = FrameBuf::from_memory(wasm4_data);
+        frame_buf.blit(
+            &draw_colors,
+            sprite,
+            x,
+            y,
+            width,
+            height,
+            0,
+            0,
+            0,
+            flags & BLIT_2BPP != 0,
+            flags & BLIT_FLIP_X != 0,
+            flags & BLIT_FLIP_Y != 0,
+            flags & BLIT_ROTATE != 0,
+        )
     }
 
     pub fn wasm4_blit_sub(
         &self,
+        data: &mut [u8],
         sprite_ptr: i32,
         x: i32,
         y: i32,

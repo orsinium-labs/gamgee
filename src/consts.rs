@@ -12,6 +12,7 @@ pub const MOUSE_X: usize = 0x1a;
 pub const SYSTEM_FLAGS: usize = 0x1f;
 // pub const NETPLAY: usize = 0x20;
 pub const FRAMEBUFFER: usize = 0xa0;
+pub const USER_DATA: usize = 0x19a0;
 
 pub const BUTTON_1: u8 = 1;
 pub const BUTTON_2: u8 = 2;
@@ -27,7 +28,6 @@ pub const BUTTON_DOWN: u8 = 128;
 pub const SYSTEM_PRESERVE_FRAMEBUFFER: u8 = 1;
 // pub const SYSTEM_HIDE_GAMEPAD_OVERLAY: u8 = 2;
 
-pub const BLIT_1BPP: u32 = 0;
 pub const BLIT_2BPP: u32 = 1;
 pub const BLIT_FLIP_X: u32 = 2;
 pub const BLIT_FLIP_Y: u32 = 4;

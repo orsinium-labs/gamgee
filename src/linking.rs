@@ -14,12 +14,11 @@ pub fn link(
               sprite_ptr: i32,
               x: i32,
               y: i32,
-              width: u32,
-              height: u32,
+              width: i32,
+              height: i32,
               flags: u32| {
-            caller
-                .data_mut()
-                .wasm4_blit(sprite_ptr, x, y, width, height, flags);
+            let (data, bridge) = memory.data_and_store_mut(&mut caller);
+            bridge.wasm4_blit(data, sprite_ptr, x, y, width, height, flags);
         },
     )?;
     linker.func_wrap(
@@ -35,9 +34,10 @@ pub fn link(
               src_y: u32,
               stride: i32,
               flags: u32| {
-            caller
-                .data_mut()
-                .wasm4_blit_sub(sprite_ptr, x, y, width, height, src_x, src_y, stride, flags)
+            let (data, bridge) = memory.data_and_store_mut(&mut caller);
+            bridge.wasm4_blit_sub(
+                data, sprite_ptr, x, y, width, height, src_x, src_y, stride, flags,
+            )
         },
     )?;
     linker.func_wrap(
