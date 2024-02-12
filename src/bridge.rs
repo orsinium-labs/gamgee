@@ -247,17 +247,18 @@ fn get_shape_style(data: &mut [u8]) -> PrimitiveStyle<Color4> {
     style.fill_color = get_draw_color(data, 2);
     style
 }
+
 fn get_draw_color(data: &mut [u8], idx: u8) -> Option<Color4> {
     let color = match idx {
-        1 => data[DRAW_COLORS + 1] & 0x0f,
-        2 => data[DRAW_COLORS + 1] >> 4 & 0xf0,
-        3 => data[DRAW_COLORS] & 0x0f,
-        4 => data[DRAW_COLORS] >> 4 & 0xf0,
+        1 => data[DRAW_COLORS] & 0xf,
+        2 => (data[DRAW_COLORS] >> 4) & 0xf,
+        3 => data[DRAW_COLORS + 1] & 0xf,
+        4 => (data[DRAW_COLORS + 1] >> 4) & 0xf,
         _ => unreachable!("bad draw color index: {}", idx),
     };
-    // if color == 0 {
-    //     return None;
-    // }
-    // Some(Color4(color - 1))
-    Some(Color4(1))
+    assert!(color <= 4);
+    if color == 0 {
+        return None;
+    }
+    Some(Color4(color - 1))
 }
