@@ -59,7 +59,7 @@ impl Bridge {
 
     fn clear_frame_buffer(&self, data: &mut [u8]) {
         // https://wasm4.org/docs/reference/memory#system_flags
-        if data[SYSTEM_FLAGS] & 0b1 == 1 {
+        if data[SYSTEM_FLAGS] & SYSTEM_PRESERVE_FRAMEBUFFER != 0 {
             return;
         }
         #[allow(clippy::needless_range_loop)]
@@ -73,22 +73,22 @@ impl Bridge {
         // https://wasm4.org/docs/reference/memory#gamepads
         data[GAMEPAD1] = 0;
         if self.pybadge.buttons.a_pressed() {
-            data[GAMEPAD1] |= 0b10;
+            data[GAMEPAD1] |= BUTTON_2;
         }
         if self.pybadge.buttons.b_pressed() {
-            data[GAMEPAD1] |= 0b01;
+            data[GAMEPAD1] |= BUTTON_1;
         }
         if self.pybadge.buttons.left_pressed() {
-            data[GAMEPAD1] |= 0b1 << 4;
+            data[GAMEPAD1] |= BUTTON_LEFT;
         }
         if self.pybadge.buttons.right_pressed() {
-            data[GAMEPAD1] |= 0b1 << 5;
+            data[GAMEPAD1] |= BUTTON_RIGHT;
         }
         if self.pybadge.buttons.up_pressed() {
-            data[GAMEPAD1] |= 0b1 << 6;
+            data[GAMEPAD1] |= BUTTON_UP;
         }
         if self.pybadge.buttons.down_pressed() {
-            data[GAMEPAD1] |= 0b1 << 7;
+            data[GAMEPAD1] |= BUTTON_DOWN;
         }
     }
 
