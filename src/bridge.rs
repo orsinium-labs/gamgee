@@ -12,6 +12,7 @@ use pybadge_high::PyBadge;
 pub struct Bridge {
     pybadge: PyBadge,
     memory:  Option<wasmi::Memory>,
+    frame:   usize,
 }
 
 impl Bridge {
@@ -19,6 +20,7 @@ impl Bridge {
         Self {
             memory: None,
             pybadge,
+            frame: 0,
         }
     }
 
@@ -53,12 +55,15 @@ impl Bridge {
 
     pub fn update(&mut self, data: &mut [u8]) {
         let mut memory = Memory::from_bytes(data);
-        let frame_buf = FrameBuf::from_memory(&mut memory);
-        let area = Rectangle::new(Point::new(0, 0), Size::new(160, 160));
-        self.pybadge
-            .display
-            .fill_contiguous(&area, frame_buf.iter())
-            .unwrap();
+        self.frame = (self.frame + 1) % 5;
+        if self.frame == 0 {
+            let frame_buf = FrameBuf::from_memory(&mut memory);
+            let area = Rectangle::new(Point::new(0, 0), Size::new(160, 160));
+            self.pybadge
+                .display
+                .fill_contiguous(&area, frame_buf.iter())
+                .unwrap();
+        }
         self.clear_frame_buffer(data);
         self.update_gamepad(data);
     }
