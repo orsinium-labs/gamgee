@@ -3,12 +3,19 @@ name = "pybadge-wasm"
 version = "0.1.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# https://github.com/johnthagen/min-sized-rust
+[profile.release]
+strip = true    # Automatically strip symbols from the binary.
+opt-level = "z" # Optimize for size.
+lto = true      # Enable link-time optimization
 
 [dependencies]
 cortex-m-rt = "0.7.3"
 embedded-alloc = "0.5.1"
 embedded-graphics = "0.7.1"
-pybadge-high = { version = "0.2.0", features = ["neopixel", "bluescreen-message-nightly"] }
+pybadge-high = { version = "0.2.0", features = [
+    "neopixel",
+    "bluescreen-message-nightly",
+] }
 wasmi = { version = "0.31.2", default-features = false }
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
