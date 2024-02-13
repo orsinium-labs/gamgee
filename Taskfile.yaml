@@ -17,4 +17,5 @@ tasks:
     desc: "Flash the demo to pybadge"
     cmds:
       - task: build-wasm
-      - cargo run --release
+      - test {{.CLI_ARGS}}
+      - GAME_PATH={{.CLI_ARGS}} cargo run --release

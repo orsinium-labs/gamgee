@@ -11,11 +11,7 @@ mod memory;
 
 use bridge::Bridge;
 use embedded_alloc::Heap;
-use embedded_graphics::mono_font::ascii::FONT_6X10;
-use embedded_graphics::mono_font::MonoTextStyle;
-use embedded_graphics::pixelcolor::Rgb565;
 use embedded_graphics::prelude::*;
-use embedded_graphics::text::Text;
 use linking::link;
 use pybadge::prelude::entry;
 use pybadge::{Color, PyBadge};
@@ -35,12 +31,8 @@ fn main() -> ! {
 
     let mut pybadge = PyBadge::take().unwrap();
     pybadge.display.clear(Color::RED).unwrap();
-    let style = MonoTextStyle::new(&FONT_6X10, Rgb565::WHITE);
-    Text::new("Hello Rust!", Point::new(20, 30), style)
-        .draw(&mut pybadge.display)
-        .unwrap();
     let engine = wasmi::Engine::default();
-    let bytes = include_bytes!("../snake.wasm");
+    let bytes = include_bytes!(env!("GAME_PATH"));
     let module = wasmi::Module::new(&engine, &bytes[..]).unwrap();
     let bridge = Bridge::new(pybadge);
     let mut store = <wasmi::Store<Bridge>>::new(&engine, bridge);
