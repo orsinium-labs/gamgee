@@ -148,7 +148,7 @@ impl Bridge {
         flags: u32,
     ) {
         let memory = Memory::from_bytes(data);
-        let size = (width * height) as u32 / 4;
+        let size = (stride * height) as u32 / 4;
         let sprite = get_user_data(memory.user_data, sprite_ptr, size);
         let mut frame_buf = FrameBuf {
             palette_raw: memory.palette,
