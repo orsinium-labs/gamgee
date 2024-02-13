@@ -91,17 +91,17 @@ pub fn link(
     linker.func_wrap(
         "env",
         "textUtf8",
-        move |mut caller: C, text: i32, byte_len: u32, x: i32, y: i32| {
+        move |mut caller: C, text_ptr: u32, byte_len: u32, x: i32, y: i32| {
             let (data, bridge) = memory.data_and_store_mut(&mut caller);
-            bridge.wasm4_text_utf8(data, text, byte_len, x, y)
+            bridge.wasm4_text_utf8(data, text_ptr, byte_len, x, y)
         },
     )?;
     linker.func_wrap(
         "env",
         "textUtf16",
-        move |mut caller: C, text: i32, byte_len: u32, x: i32, y: i32| {
+        move |mut caller: C, text_ptr: u32, byte_len: u32, x: i32, y: i32| {
             let (data, bridge) = memory.data_and_store_mut(&mut caller);
-            bridge.wasm4_text_utf16(data, text, byte_len, x, y)
+            bridge.wasm4_text_utf16(data, text_ptr, byte_len, x, y)
         },
     )?;
     linker.func_wrap(

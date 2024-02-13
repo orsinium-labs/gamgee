@@ -2,11 +2,8 @@ use crate::consts::*;
 use crate::framebuf::{Color4, FrameBuf};
 use crate::memory::Memory;
 use embedded_graphics::geometry::Point;
-use embedded_graphics::mono_font::ascii::FONT_6X10;
-use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::prelude::*;
 use embedded_graphics::primitives::{Ellipse, Line, PrimitiveStyle, Rectangle, StyledDrawable};
-use embedded_graphics::text::Text;
 use pybadge_high::PyBadge;
 
 static FONT: &[u8; 1792] = include_bytes!("font.bin");
@@ -245,12 +242,62 @@ impl Bridge {
         }
     }
 
-    pub fn wasm4_text_utf8(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {
-        // ...
+    pub fn wasm4_text_utf8(
+        &mut self,
+        data: &mut [u8],
+        text_ptr: u32,
+        byte_len: u32,
+        x: i32,
+        y: i32,
+    ) {
+        let memory = Memory::from_bytes(data);
+        let str_data: &[u8] = get_user_data(memory.user_data, text_ptr, byte_len);
+        let mut frame_buf = FrameBuf {
+            palette_raw: memory.palette,
+            frame_buf:   memory.frame_buf,
+        };
+        let mut char_x = x;
+        let mut char_y = y;
+        for char in str_data {
+            let char = *char as i32;
+            if char == 0 {
+                break;
+            }
+            // newline
+            if char == 10 {
+                char_y += 8;
+                char_x = x;
+                continue;
+            }
+            if char < 32 {
+                char_x += 8;
+                continue;
+            }
+            frame_buf.blit(
+                memory.draw_colors,
+                FONT,
+                char_x,
+                char_y,
+                8,
+                8,
+                0,
+                (char - 32) << 3,
+                8,
+                0,
+            );
+            char_x += 8;
+        }
     }
 
-    pub fn wasm4_text_utf16(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {
-        // ...
+    pub fn wasm4_text_utf16(
+        &mut self,
+        data: &mut [u8],
+        text_ptr: u32,
+        byte_len: u32,
+        x: i32,
+        y: i32,
+    ) {
+        self.wasm4_text_utf8(data, text_ptr, byte_len, x, y);
     }
 
     pub fn wasm4_tone(
