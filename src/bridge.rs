@@ -30,22 +30,22 @@ impl Bridge {
         // init the color palette
 
         // ugly colors for better debugging
-        write32le(&mut data[PALETTE..], 0xffffff);
-        write32le(&mut data[PALETTE + 4..], 0x0000ff);
-        write32le(&mut data[PALETTE + 8..], 0xff0000);
-        write32le(&mut data[PALETTE + 12..], 0x00ff00);
+        // write32le(&mut data[PALETTE..], 0xffffff);
+        // write32le(&mut data[PALETTE + 4..], 0x0000ff);
+        // write32le(&mut data[PALETTE + 8..], 0xff0000);
+        // write32le(&mut data[PALETTE + 12..], 0x00ff00);
 
         // The original default palette
-        // write32le(&mut data[PALETTE..], 0xe0f8cf);
-        // write32le(&mut data[PALETTE + 4..], 0x86c06c);
-        // write32le(&mut data[PALETTE + 8..], 0x306850);
-        // write32le(&mut data[PALETTE + 12..], 0x071821);
+        write32le(&mut data[PALETTE..], 0xe0f8cf);
+        write32le(&mut data[PALETTE + 4..], 0x86c06c);
+        write32le(&mut data[PALETTE + 8..], 0x306850);
+        write32le(&mut data[PALETTE + 12..], 0x071821);
 
         // https://lospec.com/palette-list/ice-cream-gb
-        // write32le(&mut data[PALETTE..], 0xfff6d3);
-        // write32le(&mut data[PALETTE + 4..], 0xf9a875);
-        // write32le(&mut data[PALETTE + 8..], 0xeb6b6f);
-        // write32le(&mut data[PALETTE + 12..], 0x7c3f58);
+        // write32le(&mut data[PALETTE..], 0xd3f6ff);
+        // write32le(&mut data[PALETTE + 4..], 0x75a8f9);
+        // write32le(&mut data[PALETTE + 8..], 0x6f6beb);
+        // write32le(&mut data[PALETTE + 12..], 0x583f7c);
 
         write16le(&mut data[DRAW_COLORS..], 0x0312);
         write32le(&mut data[MOUSE_X..], 0x7fff_7fff);
