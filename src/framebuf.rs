@@ -14,15 +14,6 @@ impl Color4 {
     fn as_byte(&self) -> u8 {
         self.0
     }
-
-    // pub fn from_byte(byte: &u8) -> &[Color4] {
-    //     RawU2::new();
-    //     std::mem::transmute(src)
-    // }
-
-    // pub fn from_bytes(bytes: &[u8]) -> &[Color4] {
-    //     todo!()
-    // }
 }
 
 impl PixelColor for Color4 {
@@ -199,6 +190,12 @@ impl<'a> Iterator for PixelIterator<'a> {
     type Item = Rgb565;
 
     fn next(&mut self) -> Option<Self::Item> {
+        // Skip every 5th line. The frame buffer (screen in wasm-4) has height 160px
+        // but pybadge screen has height only 128px.
+        if (self.pos / 160) % 5 == 0 {
+            self.pos += 160
+        }
+
         if self.pos >= 160 * 160 {
             return None;
         }
