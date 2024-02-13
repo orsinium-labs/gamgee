@@ -9,6 +9,8 @@ use embedded_graphics::primitives::{Ellipse, Line, PrimitiveStyle, Rectangle, St
 use embedded_graphics::text::Text;
 use pybadge_high::PyBadge;
 
+static FONT: &[u8; 1792] = include_bytes!("font.bin");
+
 pub struct Bridge {
     pybadge: PyBadge,
     memory:  Option<wasmi::Memory>,
@@ -206,19 +208,41 @@ impl Bridge {
     pub fn wasm4_text(&mut self, data: &mut [u8], text_ptr: u32, x: i32, y: i32) {
         let memory = Memory::from_bytes(data);
         let str_data: &[u8] = get_user_data(memory.user_data, text_ptr, 1024);
-        let c_str = core::ffi::CStr::from_bytes_until_nul(str_data).unwrap();
-        let str = c_str.to_str().unwrap();
-        let Some(color) = get_draw_color(memory.draw_colors, 1) else {
-            return;
-        };
-        let style = MonoTextStyle::new(&FONT_6X10, color);
-        let position = Point::new(x, y);
-        let text = Text::new(str, position, style);
         let mut frame_buf = FrameBuf {
             palette_raw: memory.palette,
             frame_buf:   memory.frame_buf,
         };
-        text.draw(&mut frame_buf);
+        let mut char_x = x;
+        let mut char_y = y;
+        for char in str_data {
+            let char = *char as i32;
+            if char == 0 {
+                break;
+            }
+            // newline
+            if char == 10 {
+                char_y += 8;
+                char_x = x;
+                continue;
+            }
+            if char < 32 {
+                char_x += 8;
+                continue;
+            }
+            frame_buf.blit(
+                memory.draw_colors,
+                FONT,
+                char_x,
+                char_y,
+                8,
+                8,
+                0,
+                (char - 32) << 3,
+                8,
+                0,
+            );
+            char_x += 8;
+        }
     }
 
     pub fn wasm4_text_utf8(&mut self, data: &mut [u8], text: i32, byte_len: u32, x: i32, y: i32) {

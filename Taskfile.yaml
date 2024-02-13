@@ -18,4 +18,5 @@ tasks:
     cmds:
       - task: build-wasm
       - test {{.CLI_ARGS}}
+      - test -f {{.CLI_ARGS}}
       - GAME_PATH={{.CLI_ARGS}} cargo run --release
