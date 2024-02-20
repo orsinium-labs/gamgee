@@ -24,7 +24,7 @@ static HEAP: Heap = Heap::empty();
 fn main() -> ! {
     {
         use core::mem::MaybeUninit;
-        const HEAP_SIZE: usize = 168 * 1024;
+        const HEAP_SIZE: usize = 185 * 1024;
         static mut HEAP_MEM: [MaybeUninit<u8>; HEAP_SIZE] = [MaybeUninit::uninit(); HEAP_SIZE];
         unsafe { HEAP.init(HEAP_MEM.as_ptr() as usize, HEAP_SIZE) }
     }
@@ -51,6 +51,13 @@ fn main() -> ! {
     {
         let (data, bridge) = memory.data_and_store_mut(&mut store);
         bridge.init(memory, data);
+    }
+    // wasi p1
+    if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "_initialize") {
+        start.call(&mut store, ()).unwrap();
+    }
+    if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "_start") {
+        start.call(&mut store, ()).unwrap();
     }
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "start") {
         start.call(&mut store, ()).unwrap();
