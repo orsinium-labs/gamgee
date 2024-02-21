@@ -355,11 +355,11 @@ fn write16le(target: &mut [u8], val: u16) {
 /// Make style for drawing primitives, use draw color 1 for stroke and color 2 for fill.
 fn get_shape_style(draw_colors: &[u8]) -> PrimitiveStyle<Color4> {
     let mut style = PrimitiveStyle::new();
-    if let Some(color) = get_draw_color(draw_colors, 1) {
+    style.fill_color = get_draw_color(draw_colors, 1);
+    if let Some(color) = get_draw_color(draw_colors, 2) {
         style.stroke_width = 1;
         style.stroke_color = Some(color);
     };
-    style.fill_color = get_draw_color(draw_colors, 2);
     style
 }
 
