@@ -353,13 +353,12 @@ fn get_shape_style(draw_colors: &[u8]) -> PrimitiveStyle<Color4> {
 
 /// Given draw colors and draw color index, get the palette color.
 fn get_draw_color(draw_colors: &[u8], idx: u8) -> Option<Color4> {
-    let color = match idx {
-        1 => draw_colors[0] & 0xf,
-        2 => (draw_colors[0] >> 4) & 0xf,
-        3 => draw_colors[1] & 0xf,
-        4 => (draw_colors[1] >> 4) & 0xf,
-        _ => unreachable!("bad draw color index: {}", idx),
-    };
+    assert!(idx == 1 || idx == 2);
+    let mut color = draw_colors[0];
+    if idx == 2 {
+        color >>= 4;
+    }
+    color &= 0xf;
     assert!(color <= 4, "draw color has too high palette index");
     if color == 0 {
         return None;
