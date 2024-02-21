@@ -26,28 +26,15 @@ impl Bridge {
     /// Initialize memory and stuff. Called before the application is started.
     pub fn init(&mut self, memory: wasmi::Memory, data: &mut [u8]) {
         self.memory = Some(memory);
-        // init the color palette
 
-        // ugly colors for better debugging
-        // write32le(&mut data[PALETTE..], 0xffffff);
-        // write32le(&mut data[PALETTE + 4..], 0x0000ff);
-        // write32le(&mut data[PALETTE + 8..], 0xff0000);
-        // write32le(&mut data[PALETTE + 12..], 0x00ff00);
-
-        // The original default palette
-        write32le(&mut data[PALETTE..], 0xe0f8cf);
-        write32le(&mut data[PALETTE + 4..], 0x86c06c);
-        write32le(&mut data[PALETTE + 8..], 0x306850);
-        write32le(&mut data[PALETTE + 12..], 0x071821);
-
-        // https://lospec.com/palette-list/ice-cream-gb
-        // write32le(&mut data[PALETTE..], 0xd3f6ff);
-        // write32le(&mut data[PALETTE + 4..], 0x75a8f9);
-        // write32le(&mut data[PALETTE + 8..], 0x6f6beb);
-        // write32le(&mut data[PALETTE + 12..], 0x583f7c);
+        // Init the default color palette
+        write_color(&mut data[PALETTE..], 0xe0, 0xf8, 0xcf);
+        write_color(&mut data[PALETTE + 4..], 0x86, 0xc0, 0x6c);
+        write_color(&mut data[PALETTE + 8..], 0x30, 0x68, 0x50);
+        write_color(&mut data[PALETTE + 12..], 0x07, 0x18, 0x21);
 
         write16le(&mut data[DRAW_COLORS..], 0x0312);
-        write32le(&mut data[MOUSE_X..], 0x7fff_7fff);
+        // write32le(&mut data[MOUSE_X..], 0x7fff_7fff);
 
         // let frame_buf = FrameBuf::from_memory(data);
     }
@@ -197,6 +184,10 @@ impl Bridge {
     pub fn wasm4_rect(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
         let rect = Rectangle::new(Point::new(x, y), Size::new(width, height));
         let mut memory = Memory::from_bytes(data);
+        // panic!(
+        //     "{} {} {} {}",
+        //     memory.palette[0], memory.palette[1], memory.palette[2], memory.palette[3]
+        // );
         let style = get_shape_style(memory.draw_colors);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
         rect.draw_styled(&style, &mut frame_buf);
@@ -332,15 +323,12 @@ impl Bridge {
     }
 }
 
-/// Write the given 32 bits at the beginning of the byte slice.
-///
-/// Uses little-endian encoding because wasm memory is little-endian.
-fn write32le(target: &mut [u8], val: u32) {
-    let val = val.to_le();
-    target[3] = (val & 0x0000_00ff) as u8;
-    target[2] = ((val & 0x0000_ff00) >> 8) as u8;
-    target[1] = ((val & 0x00ff_0000) >> 16) as u8;
-    target[0] = ((val & 0xff00_0000) >> 24) as u8;
+// Write u32 RGB color at the beginning of the given byte slice.
+fn write_color(target: &mut [u8], r: u8, g: u8, b: u8) {
+    target[3] = 0;
+    target[2] = r;
+    target[1] = g;
+    target[0] = b;
 }
 
 /// Write the given 16 bits at the beginning of the byte slice.

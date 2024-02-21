@@ -45,9 +45,9 @@ impl<'a> FrameBuf<'a> {
     pub fn get_color(&self, color_id: u8) -> Rgb565 {
         let start = (color_id * 4) as usize;
         let raw_color = &self.palette_raw[start..(start + 4)];
-        let r = (raw_color[3] as f64 * 32. / 256.) as u8;
-        let g = (raw_color[2] as f64 * 64. / 256.) as u8;
-        let b = (raw_color[1] as f64 * 32. / 256.) as u8;
+        let r = (raw_color[2] as f64 * 32. / 256.) as u8;
+        let g = (raw_color[1] as f64 * 64. / 256.) as u8;
+        let b = (raw_color[0] as f64 * 32. / 256.) as u8;
         Rgb565::new(r, g, b)
     }
 
