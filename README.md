@@ -28,7 +28,7 @@ Features:
 1. PyBadge screen uses 16 bits per pixel for colors. WASM-4 color palette is defined as 24 bits for each color. We translate the color palette to pybadge colors as close as possible but the colors might look a bit different from (not as vibrant as) what you see on your PC screen.
 1. PyBadge has 192KB of RAM, and a few Kb are needed for the runtime itself. WebAssembly memory is allocated in pages of 64 Kb. So, we can allocate only 2 pages (128 Kb) of memory for the game to use before crashing with OOM. It's enough for most of the games but not all of them.
 1. Unsupported: `tone` (playing sounds). PyBadge doesn't have a speaker by default. You can attach your own but I don't have one yet. PyBadge has a built-in buzzer but that's not enough for WASM-4 games.
-1. Unsupported: `diskw` and `diskr` (persistent storage). PyBadge doesn't have a persistent sotrage. Luckily, I haven't seen a game yet that would use these functions.
+1. Unsupported: `diskw` and `diskr` (persistent storage). The unused flash space can be used to store additional data, and we might use it for these two functions. However, I haven't seen a game yet that would use them. WASM-4 provides game save by dumping the whole game state, so games don't neet to implement their own save system.
 
 ## 🙏 Acknowledgments
 
