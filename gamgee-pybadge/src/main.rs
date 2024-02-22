@@ -47,7 +47,7 @@ fn main() -> ! {
 
     {
         let (data, bridge) = memory.data_and_store_mut(&mut store);
-        bridge.init(memory, data);
+        bridge.init(data);
     }
     // wasi p1
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "_initialize") {
