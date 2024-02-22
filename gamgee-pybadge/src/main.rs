@@ -4,7 +4,6 @@
 extern crate alloc;
 
 mod bridge;
-mod framebuf;
 mod linking;
 
 use bridge::Bridge;

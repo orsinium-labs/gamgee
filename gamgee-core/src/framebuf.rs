@@ -1,9 +1,10 @@
+use crate::consts::*;
+use crate::memory::Memory;
 use embedded_graphics::draw_target::DrawTarget;
 use embedded_graphics::geometry::{OriginDimensions, Point};
 use embedded_graphics::pixelcolor::raw::{RawData, RawU2};
 use embedded_graphics::pixelcolor::{PixelColor, Rgb565};
 use embedded_graphics::prelude::{Pixel, Size};
-use gamgee_core::*;
 
 /// Represents one of four colors in the palette with a 0-3 number, taking 2 bits.
 #[derive(PartialEq, Copy, Clone)]

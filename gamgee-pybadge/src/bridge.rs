@@ -1,4 +1,3 @@
-use crate::framebuf::{Color4, FrameBuf};
 use embedded_graphics::geometry::Point;
 use embedded_graphics::prelude::*;
 use embedded_graphics::primitives::{Ellipse, Line, PrimitiveStyle, Rectangle, StyledDrawable};
