@@ -221,6 +221,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "gamgee-core"
+version = "0.1.0"
+dependencies = [
+ "embedded-graphics",
+ "wasmi",
+]
+
+[[package]]
 name = "gamgee-pybadge"
 version = "0.1.0"
 dependencies = [
@@ -228,6 +236,7 @@ dependencies = [
  "cortex-m-rt",
  "embedded-alloc",
  "embedded-graphics",
+ "gamgee-core",
  "pybadge-high",
  "wasmi",
 ]

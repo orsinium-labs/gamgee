@@ -1,9 +1,8 @@
-use crate::consts::*;
 use crate::framebuf::{Color4, FrameBuf};
-use crate::memory::Memory;
 use embedded_graphics::geometry::Point;
 use embedded_graphics::prelude::*;
 use embedded_graphics::primitives::{Ellipse, Line, PrimitiveStyle, Rectangle, StyledDrawable};
+use gamgee_core::*;
 use pybadge_high::PyBadge;
 
 static FONT: &[u8; 1792] = include_bytes!("font.bin");
@@ -170,7 +169,7 @@ impl Bridge {
         };
         let style = PrimitiveStyle::with_stroke(color, 1);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
-        line.draw_styled(&style, &mut frame_buf);
+        _ = line.draw_styled(&style, &mut frame_buf);
     }
 
     pub fn wasm4_oval(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
@@ -178,7 +177,7 @@ impl Bridge {
         let mut memory = Memory::from_bytes(data);
         let style = get_shape_style(memory.draw_colors);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
-        ellipse.draw_styled(&style, &mut frame_buf);
+        _ = ellipse.draw_styled(&style, &mut frame_buf);
     }
 
     pub fn wasm4_rect(&mut self, data: &mut [u8], x: i32, y: i32, width: u32, height: u32) {
@@ -190,7 +189,7 @@ impl Bridge {
         // );
         let style = get_shape_style(memory.draw_colors);
         let mut frame_buf = FrameBuf::from_memory(&mut memory);
-        rect.draw_styled(&style, &mut frame_buf);
+        _ = rect.draw_styled(&style, &mut frame_buf);
     }
 
     pub fn wasm4_text(&mut self, data: &mut [u8], text_ptr: u32, x: i32, y: i32) {
@@ -367,7 +366,7 @@ fn get_draw_color(draw_colors: &[u8], idx: u8) -> Option<Color4> {
 }
 
 /// Safely read bytes from the user space of the wasm memory.
-pub fn get_user_data(user_data: &[u8], ptr: u32, len: u32) -> &[u8] {
+fn get_user_data(user_data: &[u8], ptr: u32, len: u32) -> &[u8] {
     let ptr = ptr as usize;
     if ptr < USER_DATA {
         return &[];

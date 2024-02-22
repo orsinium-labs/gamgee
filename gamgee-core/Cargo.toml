@@ -1,0 +1,8 @@
+[package]
+name = "gamgee-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+embedded-graphics = "0.7.1"
+wasmi = { version = "0.31.2", default-features = false }

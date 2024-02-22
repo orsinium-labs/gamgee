@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+gamgee-core = { path = "../gamgee-core" }
 cortex-m-rt = "0.7.3"
 embedded-alloc = "0.5.1"
 embedded-graphics = "0.7.1"

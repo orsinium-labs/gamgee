@@ -4,10 +4,8 @@
 extern crate alloc;
 
 mod bridge;
-mod consts;
 mod framebuf;
 mod linking;
-mod memory;
 
 use bridge::Bridge;
 use embedded_alloc::Heap;

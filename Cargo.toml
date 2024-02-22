@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["gamgee-pybadge"]
+members = ["gamgee-core", "gamgee-pybadge"]
 
 # https://github.com/johnthagen/min-sized-rust
 [profile.release]
