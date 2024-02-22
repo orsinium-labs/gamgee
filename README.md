@@ -1,39 +1,36 @@
-# pybadge wasm
+# gamgee
 
-| runtime       | language  | archived | stale | micro | test results |
-| ------------- | --------- | -------- | ----- | ----- | ------------ |
-| [wazero]      | 🐹 Go     |    |    |    | ❌ |
-| [wasman]      | 🐹 Go     |    | 2y |    | ✅ |
-| [wagon]       | 🐹 Go     | 🗃 | 4y |    |    |
-| [life]        | 🐹 Go     | 💀 | 5y |    | ❌ |
-| [wamr]        | C+Go      |    |    | 🔬 |    |
-| [go-wasm3]    | C+Go      |    | 2y | 🔬 |    |
-| [wasmer-go]   | Rust+Go   | 💀 | 2y |    |    |
-| [wasmtime-go] | Rust+Go   |    |    |    |    |
-| [wasmi]       | Rust      |    |    | 🔬 |    |
+Run WebAssembly (WASM-4) games on small devices.
 
-[wagon]:        https://github.com/go-interpreter/wagon
-[wasmer-go]:    https://github.com/wasmerio/wasmer-go
-[go-wasm3]:     https://github.com/matiasinsaurralde/go-wasm3
-[wamr]:         https://github.com/bytecodealliance/wasm-micro-runtime
-[wasmi]:        https://github.com/paritytech/wasmi
-[life]:         https://github.com/perlin-network/life
-[wazero]:       https://github.com/tetratelabs/wazero
-[wasman]:       https://github.com/c0mm4nd/wasman
-[wasmtime-go]:  https://github.com/bytecodealliance/wasmtime-go
+Gamgee is a [WASM-4](https://wasm4.org/) games emulator written in Rust and designed to be executed on devices with very little memory and space available. Currently, it supports only [Adafruit PyBadge](https://www.adafruit.com/product/4200) but we plan to add more in the future.
 
-Test results:
+Features:
 
-1. [wasman] is a very simple pure Go interpreter written by someone just for fun. it's not popular, it's not optimized, and it's not well tested. To make it work, I had to fork it, get rid of reflection, fix a memory leak, make my code use memory (the interpreter explodes with nil pointer dereference without memory), and change the memory page size to 16 kB to fit it into the available RAM.
-1. [life] fails in `NewVirtualMachine` for a mysterious reason. Reason critical enough for the code to explode without even showing the panic. Probably, something like OOM. I reaches the `m.CompileForInterpreter(gasPolicy)` call but never actually enters the method.
-1. [wazero] for tinygo is in progress, see [wazero#1854](https://github.com/tetratelabs/wazero/issues/1854). I tried running the patch linked there with dev version of tinygo and reduced page size but it still dies in `DecodeModule`, at calling `newMemorySizer`. And even with the memory sizer replaced by `nil`, it gets a but farther but not too far.
+* **Small size**. The binary is just about 270 Kb, and it includes wasm interpreter, allocator, graphics library, a custom font, etc.
+* **Small memory requirements**. The runtime itself needs just a few kilobytes of RAM and the rest is fully available to the running game.
+* **WASM-4 compatible**. It can run any WASM-4 game ([and there are quite a few](https://wasm4.org/play)) as long as it fits into memory.
 
-## Installation
+## Installation and usage
 
-```bash
-sudo apt-get install libudev-dev libusb-1.0-0-dev
-cargo install hf2-cli
-rustup target install thumbv7em-none-eabihf
-```
+1. Install Rust.
+1. [Install task](https://taskfile.dev/installation/).
+1. Connect PyBadge and turn it on.
+1. Press the "reset" button twice on PyBadge to put it into the bootloader mode.
+1. Flash a game onto the device: `task flash -- $PWD/watris.wasm`. The path must be absolute (hence `$PWD`).
+1. Press the "reset" button on PyBadge once to refresh the screen.
 
-<https://github.com/gwsystems/aWsm>
+## Limitations
+
+1. PyBadge screen size is 160x138. WASM-4 games expect 160x160. To fit the image, we skip every 5th line.
+1. PyBadge screen uses 16 bits per pixel for colors. WASM-4 color palette is defined as 24 bits for each color. We translate the color palette to pybadge colors as close as possible but the colors might look a bit different from (not as vibrant as) what you see on your PC screen.
+1. PyBadge has 192KB of RAM, and a few Kb are needed for the runtime itself. WebAssembly memory is allocated in pages of 64 Kb. So, we can allocate only 2 pages (128 Kb) of memory for the game to use before crashing with OOM. It's enough for most of the games but not all of them.
+1. Unsupported: `tone` (playing sounds). PyBadge doesn't have a speaker by default. You can attach your own but I don't have one yet. PyBadge has a built-in buzzer but that's not enough for WASM-4 games.
+1. Unsupported: `diskw` and `diskr` (persistent storage). PyBadge doesn't have a persistent sotrage. Luckily, I haven't seen a game yet that would use these functions.
+
+## Acknowledgments
+
+I want to thank:
+
+* [Ron Evans](https://github.com/deadprogram) for inspiting me to do the project and helping me to figure out some PyBadge quirks
+* [Robin Freyler](https://github.com/Robbepop) for maintaining [wasmi](https://github.com/wasmi-labs/wasmi) and answering my questions about how to make Rust borrow checker happy.
+* Creators of all other dependencies that the project uses, including [pybadge-high](https://github.com/LuckyTurtleDev/pybadge-high), [embedded-graphics](https://github.com/embedded-graphics/embedded-graphics), [atsamd](https://github.com/atsamd-rs/atsamd), and [embedded-alloc](https://github.com/rust-embedded/embedded-alloc).

@@ -2,21 +2,32 @@
 version: "3"
 
 tasks:
-  build-wasm:
-    sources:
-      - snake/main.wat
+  install-rustup:
     status:
-      - test -f snake.wasm
+      - which rustup
     cmds:
-      - wat2wasm -o snake.wasm snake/main.wat
-      - >
-        wasm-opt
-        -Oz --zero-filled-memory --strip-producers
-        snake.wasm -o snake.wasm
+      - curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+  install-nightly-rust:
+    status:
+      - rustc --version | grep nightly
+    cmds:
+      - task: install-rustup
+      - rustup toolchain install nightly --target thumbv7em-none-eabihf
+  install-target:
+    cmds:
+      - task: install-rustup
+      - rustup target install thumbv7em-none-eabihf
+  install-hf2:
+    status:
+      - which hf2
+    cmds:
+      - cargo install hf2-cli
   flash:
-    desc: "Flash the demo to pybadge"
+    desc: "Flash to pybadge the runtime with a game bundled in"
     cmds:
-      - task: build-wasm
+      - task: install-nightly-rust
+      - task: install-target
+      - task: install-hf2
       - test {{.CLI_ARGS}}
       - test -f {{.CLI_ARGS}}
       - GAME_PATH={{.CLI_ARGS}} cargo run --release

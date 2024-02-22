@@ -1,5 +1,4 @@
 /.vscode/
-*.wasm
 /*.elf
 /.task/
 /target/
