@@ -9,6 +9,7 @@ mod linking;
 use bridge::Bridge;
 use embedded_alloc::Heap;
 use embedded_graphics::prelude::*;
+use gamgee_core::init_memory;
 use linking::link;
 use pybadge::prelude::entry;
 use pybadge::{Color, PyBadge};
@@ -46,8 +47,8 @@ fn main() -> ! {
     // store.data_mut().set_memory(memory, &mut store);
 
     {
-        let (data, bridge) = memory.data_and_store_mut(&mut store);
-        bridge.init(data);
+        let data = memory.data_mut(&mut store);
+        init_memory(data);
     }
     // wasi p1
     if let Ok(start) = instance.get_typed_func::<(), ()>(&store, "_initialize") {

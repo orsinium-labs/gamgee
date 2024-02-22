@@ -14,20 +14,6 @@ impl Bridge {
         Self { pybadge, frame: 0 }
     }
 
-    /// Initialize memory and stuff. Called before the application is started.
-    pub fn init(&mut self, data: &mut [u8]) {
-        // Init the default color palette
-        write_color(&mut data[PALETTE..], 0xe0, 0xf8, 0xcf);
-        write_color(&mut data[PALETTE + 4..], 0x86, 0xc0, 0x6c);
-        write_color(&mut data[PALETTE + 8..], 0x30, 0x68, 0x50);
-        write_color(&mut data[PALETTE + 12..], 0x07, 0x18, 0x21);
-
-        write16le(&mut data[DRAW_COLORS..], 0x0312);
-        // write32le(&mut data[MOUSE_X..], 0x7fff_7fff);
-
-        // let frame_buf = FrameBuf::from_memory(data);
-    }
-
     pub fn update(&mut self, data: &mut [u8]) {
         let mut memory = Memory::from_bytes(data);
         self.frame = (self.frame + 1) % 5;
@@ -39,19 +25,8 @@ impl Bridge {
                 .fill_contiguous(&area, frame_buf.iter())
                 .unwrap();
         }
-        self.clear_frame_buffer(data);
+        clear_frame_buffer(data);
         self.update_gamepad(data);
-    }
-
-    fn clear_frame_buffer(&self, data: &mut [u8]) {
-        // https://wasm4.org/docs/reference/memory#system_flags
-        if data[SYSTEM_FLAGS] & SYSTEM_PRESERVE_FRAMEBUFFER != 0 {
-            return;
-        }
-        #[allow(clippy::needless_range_loop)]
-        for addr in 0x00a0..0x19a0 {
-            data[addr] = 0;
-        }
     }
 
     fn update_gamepad(&mut self, data: &mut [u8]) {
@@ -80,49 +55,32 @@ impl Bridge {
 
     pub fn wasm4_tone(
         &mut self,
-        data: &mut [u8],
-        frequency: u32,
-        duration: u32,
-        volume: u32,
-        flags: u32,
+        _data: &mut [u8],
+        _frequency: u32,
+        _duration: u32,
+        _volume: u32,
+        _flags: u32,
     ) {
         // ...
     }
 
-    pub fn wasm4_diskr(&mut self, data: &mut [u8], dest: i32, size: u32) -> u32 {
+    pub fn wasm4_diskr(&mut self, _data: &mut [u8], _dest: i32, _size: u32) -> u32 {
         0
     }
 
-    pub fn wasm4_diskw(&mut self, data: &mut [u8], src: i32, size: u32) -> u32 {
+    pub fn wasm4_diskw(&mut self, _data: &mut [u8], _src: i32, _size: u32) -> u32 {
         0
     }
 
-    pub fn wasm4_trace(&mut self, data: &mut [u8], str: i32) {
+    pub fn wasm4_trace(&mut self, _data: &mut [u8], _str: i32) {
         // ...
     }
 
-    pub fn wasm4_trace_utf8(&mut self, data: &mut [u8], str: i32, byte_len: u32) {
+    pub fn wasm4_trace_utf8(&mut self, _data: &mut [u8], _str: i32, _byte_len: u32) {
         // ...
     }
 
-    pub fn wasm4_trace_utf16(&mut self, data: &mut [u8], str: i32, byte_len: u32) {
+    pub fn wasm4_trace_utf16(&mut self, _data: &mut [u8], _str: i32, _byte_len: u32) {
         // ...
     }
-}
-
-// Write u32 RGB color at the beginning of the given byte slice.
-fn write_color(target: &mut [u8], r: u8, g: u8, b: u8) {
-    target[3] = 0;
-    target[2] = r;
-    target[1] = g;
-    target[0] = b;
-}
-
-/// Write the given 16 bits at the beginning of the byte slice.
-///
-/// Uses little-endian encoding because wasm memory is little-endian.
-fn write16le(target: &mut [u8], val: u16) {
-    let val = val.to_le();
-    target[1] = (val & 0x00ff) as u8;
-    target[0] = ((val & 0xff00) >> 8) as u8;
 }
