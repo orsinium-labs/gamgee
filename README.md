@@ -10,6 +10,8 @@ Features:
 * 🐜 **Small memory requirements**. The runtime itself needs just a few kilobytes of RAM and the rest is fully available to the running game.
 * 🕹 **WASM-4 compatible**. It can run any WASM-4 game ([and there are quite a few](https://wasm4.org/play)) as long as it fits into memory.
 
+![photo of pybadge running tetris](./photo.jpg)
+
 ## 🔧 Installation and usage
 
 1. Install Rust.
