@@ -221,6 +221,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "gamgee-pybadge"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "embedded-alloc",
+ "embedded-graphics",
+ "pybadge-high",
+ "wasmi",
+]
+
+[[package]]
 name = "hash32"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -382,18 +394,6 @@ dependencies = [
  "st7735-lcd",
  "usbd-serial",
  "ws2812-timer-delay",
-]
-
-[[package]]
-name = "pybadge-wasm"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "embedded-alloc",
- "embedded-graphics",
- "pybadge-high",
- "wasmi",
 ]
 
 [[package]]
